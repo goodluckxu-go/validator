@@ -1,3 +1,3 @@
-module github.com:goodluckxu-go/validator
+module github.com/goodluckxu-go/validator
 
 go 1.17

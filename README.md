@@ -14,7 +14,7 @@
 
 引入
 ~~~go
-import "github.com/goodluckxu/validator"
+import "github.com/goodluckxu-go/validator"
 ~~~
 
 添加全局验证器
