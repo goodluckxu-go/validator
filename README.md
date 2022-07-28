@@ -41,8 +41,8 @@ err := validator.New(c.Request).ValidJson(&data, []validator.Rule{
         }, &dataIn), // 自定义验证
     ), Notes: "测试"},
 }, validator.Messages{ // 只会生效最后一条
-    {"list.*.b.*.a.required", "必填"},// 其中*代表list1列表的所有的b数组中第一位的required规则错误注释被替换
-    {"list.*.b.0.a.required", "必填1"}, 
+    {"list.*.b.*.a.required", "必填"}, // 其中*代表list1列表的所有的b数组中所有的a的required规则错误注释被替换
+    {"list.*.b.0.a.required", "必填1"},// 其中*代表list1列表的所有的b数组中第0位的a的required规则错误注释被替换
 })
 ~~~
 
