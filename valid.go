@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 )
 
 type valid struct {
@@ -14,6 +15,7 @@ type valid struct {
 	ruleRowList    []ruleRow // 规则列表
 	ruleAsDataMap  map[string]*ruleAsData
 	ruleAsDataList []ruleAsData
+	messages       []Message
 	errors         []error // 错误列表
 }
 
@@ -26,6 +28,8 @@ func (v *valid) ValidJson(args ...interface{}) (va *valid) {
 		switch arg.(type) {
 		case []Rule:
 			rs = arg.([]Rule)
+		case []Message:
+			v.messages = arg.([]Message)
 		case *map[string]interface{}, *[]interface{}, *interface{}:
 			data = arg
 		}
@@ -142,15 +146,19 @@ func (v *valid) parseRules(rules []Rule) error {
 
 // 拆分规则和数据成一个数据对应一个规则
 func (v *valid) splitRuleAsData(row ruleRow, data interface{}, fullPk string) {
+	pk := strings.TrimPrefix(row.pk, "root")
+	pk = strings.TrimPrefix(pk, ".")
 	if v.ruleAsDataMap == nil {
 		v.ruleAsDataMap = map[string]*ruleAsData{}
 	}
 	v.ruleAsDataMap[fullPk] = &ruleAsData{
+		pk:      pk,
 		methods: row.methods,
 		notes:   row.notes,
 		data:    data,
 	}
 	v.ruleAsDataList = append(v.ruleAsDataList, ruleAsData{
+		pk:      pk,
 		fullPk:  fullPk,
 		methods: row.methods,
 		notes:   row.notes,
@@ -194,14 +202,16 @@ func (v *valid) validRule(data *interface{}) (es []error) {
 			var fn methodFunc
 			switch m.method.(type) {
 			case string:
-				if m.method.(string) == "errors" {
+				me := m.method.(string)
+				if me == "errors" {
 					isErrors = true
 					continue
 				}
+				d.message = getMessagesVal(v.messages, row, me)
 				var fnInterface interface{}
 				var ok bool
-				if fnInterface, ok = methodPool.Load(m.method.(string)); !ok {
-					es = append(es, fmt.Errorf("规则 %s 不存在", m.method))
+				if fnInterface, ok = methodPool.Load(me); !ok {
+					es = append(es, fmt.Errorf("规则 %s 不存在", me))
 					return
 				}
 				if fn, ok = fnInterface.(methodFunc); !ok {

@@ -51,6 +51,7 @@ type ruleRow struct {
 
 // 拆分数据组装
 type ruleAsData struct {
+	pk      string
 	fullPk  string
 	data    interface{}
 	methods []methodData
@@ -65,9 +66,7 @@ type Rule struct {
 }
 
 // 消息
-type Message struct {
-	notes string
-}
+type Message [2]string
 
 // 是否过滤只获取验证参数
 type filter bool

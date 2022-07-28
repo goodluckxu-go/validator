@@ -30,7 +30,7 @@ var data interface{}
 var dataIn int
 err := validator.New(c.Request).ValidJson(&data, []validator.Rule{
 	{Field:""}, //空字符串代表验证最外层(全部)
-    {Field: "c", Methods: validator.Method.List(
+    {Field: "list.*.b.*.a", Methods: validator.Method.List(
 	    validator.Method.SetMethod("required"), // 常规验证
 	    validator.Method.SetMethod("test"), // 添加的全局验证
 		// args表示外部传入的任意参数
@@ -40,6 +40,9 @@ err := validator.New(c.Request).ValidJson(&data, []validator.Rule{
             return nil
         }, &dataIn), // 自定义验证
     ), Notes: "测试"},
+}, validator.Messages{ // 只会生效最后一条
+    {"list.*.b.*.a.required", "必填"},// 其中*代表list1列表的所有的b数组中第一位的required规则错误注释被替换
+    {"list.*.b.0.a.required", "必填1"}, 
 })
 ~~~
 

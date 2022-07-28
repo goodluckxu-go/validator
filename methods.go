@@ -12,7 +12,7 @@ func (m *methods) Errors(d *Data, args ...interface{}) error {
 }
 
 func (m *methods) Required(d *Data, args ...interface{}) error {
-	rs := getNotes(lang.Required, d.GetNotes())
+	rs := getNotes(lang.Required, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {
 		return rs

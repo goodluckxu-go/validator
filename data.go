@@ -5,6 +5,7 @@ type Data struct {
 	data          *interface{}
 	notes         string
 	fullField     string
+	message       string
 	validData     interface{}
 	ruleAsDataMap map[string]*ruleAsData
 }

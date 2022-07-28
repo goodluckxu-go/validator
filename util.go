@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cstockton/go-conv"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -241,7 +241,7 @@ func upData(data interface{}, key string, value interface{}) interface{} {
 		dataMap[firstKey] = upData(dataMap[firstKey], otherKey, value)
 		data = dataMap
 	case []interface{}:
-		index, _ := conv.Int(firstKey)
+		index, _ := strconv.Atoi(firstKey)
 		dataList, _ := data.([]interface{})
 		if len(dataList) > index {
 			dataList[index] = upData(dataList[index], otherKey, value)
@@ -281,9 +281,12 @@ func parseLang(langAddr string) {
 	}
 }
 
-func getNotes(langStr string, args ...interface{}) error {
+func getNotes(langStr string, message string, args ...interface{}) error {
 	if len(args) > 0 {
 		langStr = strings.Replace(langStr, "${notes}", fmt.Sprintf("%v", args[0]), -1)
+	}
+	if message != "" {
+		langStr = message
 	}
 	return errors.New(langStr)
 }
@@ -327,4 +330,37 @@ func getData(data interface{}, key string) []interface{} {
 		return newDataList
 	}
 	return []interface{}{data}
+}
+
+func getMessagesVal(messages []Message, row ruleAsData, me string) string {
+	rs := ""
+	fullPkList := strings.Split(row.fullPk, ".")
+	for _, message := range messages {
+		k := message[0]
+		v := message[1]
+		if k == "" {
+			continue
+		}
+		kList := strings.Split(k, ".")
+		if kList[len(kList)-1] != me {
+			continue
+		}
+		kList = kList[0 : len(kList)-1]
+		isSame := true
+		for index, kv := range kList {
+			if len(fullPkList) <= index {
+				isSame = false
+				break
+			}
+			fv := fullPkList[index]
+			if kv != "*" && kv != fv {
+				isSame = false
+				break
+			}
+		}
+		if isSame {
+			rs = v
+		}
+	}
+	return rs
 }
