@@ -7,6 +7,10 @@ import (
 type methods struct {
 }
 
+func (m *methods) Errors(d *Data, args ...interface{}) error {
+	return nil
+}
+
 func (m *methods) Required(d *Data, args ...interface{}) error {
 	rs := getNotes(lang.Required, d.GetNotes())
 	validData := d.GetValidData()

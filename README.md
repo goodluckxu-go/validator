@@ -114,6 +114,12 @@ err := validator.New(c.Request).ValidJson(&data, []validator.Rule{
 #### GetNotes() string
 获取注释
 
+## 返回(callback)
+*valid
+### 方法
+Error() string   单条错误信息
+Errors() []string  多条错误信息
+
 ## 语言包(language)
 ~~~go
 validator.SetLangAddr("./zh_cn.json")
@@ -121,3 +127,11 @@ validator.SetLangAddr("./zh_cn.json")
 语言包json格式参照lang/zh_cn.json文件
 
 ## 所有常规验证规则(rules)
+### 通用规则
+errors|required
+
+## 规则注释(rule notes)
+### errors
+同时验证单条数据的所有规则返回所有错误信息，设置在第一个规则，不填则验证第一个规则
+### required
+验证数据必填

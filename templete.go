@@ -64,8 +64,8 @@ type Rule struct {
 	Notes   string
 }
 
-// 注释
-type Notes struct {
+// 消息
+type Message struct {
 	notes string
 }
 
