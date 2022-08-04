@@ -1,19 +1,28 @@
 package validator
 
+import (
+	"test/validator/param"
+	"test/validator/types"
+)
+
 func (m *methods) Eq(d *Data, args ...interface{}) error {
-	var fType fieldType
-	var val value
+	var fType *param.Param
+	var val interface{}
 	for _, arg := range args {
-		switch arg.(type) {
-		case fieldType:
-			fType = arg.(fieldType)
-		case value:
-			val = arg.(value)
+		if argParam, ok := arg.(*param.Param); ok {
+			switch argParam {
+			case types.Field:
+				fType = argParam
+			default:
+				if argParam.Value != nil {
+					val = argParam.Value
+				}
+			}
 		}
 	}
 	validData := d.GetValidData()
 	validNotes := d.GetNotes()
-	if fType == Method.Field {
+	if fType == types.Field {
 		valStr, _ := val.(string)
 		for _, vMap := range d.GetLevelData(valStr) {
 			if !isEqualData(validData, vMap.data) {

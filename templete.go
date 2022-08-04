@@ -52,11 +52,13 @@ func (m *method) SetMethod(r string, args ...interface{}) (ms *method) {
 	return
 }
 
-type value interface{}
+type value struct {
+	value interface{}
+}
 
 // 设置规则类型
 func (m *method) SetValue(v interface{}) value {
-	return v
+	return value{value: v}
 }
 
 // 处理数据
