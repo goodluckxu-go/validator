@@ -1,14 +1,26 @@
 package validator
 
 var (
-	Method method   // 规则方法
-	lang   language // 语言
+	Method = method{
+		nil, nil, 1, 2, 3, 4, 5, 6, 7, 8,
+	} // 规则方法
+	lang language // 语言
 )
+
+type fieldType uint8
 
 // 规则方法
 type method struct {
 	methods []methodData
 	list    []*method
+	Array   fieldType // 数组类型
+	Map     fieldType // 对象类型
+	String  fieldType // 字符串类型
+	Number  fieldType // 数字类型
+	Integer fieldType // 整型
+	Bool    fieldType // 布尔型
+	Date    fieldType // 日期类型
+	Field   fieldType // 字段类型
 }
 
 type methodData struct {
@@ -40,6 +52,13 @@ func (m *method) SetMethod(r string, args ...interface{}) (ms *method) {
 	return
 }
 
+type value interface{}
+
+// 设置规则类型
+func (m *method) SetValue(v interface{}) value {
+	return v
+}
+
 // 处理数据
 type ruleRow struct {
 	field    string       // 验证字段(单个字段)
@@ -67,6 +86,12 @@ type Rule struct {
 
 // 消息
 type Message [2]string
+
+// 单条数据
+type dataOne struct {
+	fullPk string
+	data   interface{}
+}
 
 // 是否过滤只获取验证参数
 type filter bool

@@ -7,15 +7,18 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
 type valid struct {
 	req            *http.Request
-	ruleRowList    []ruleRow // 规则列表
-	ruleAsDataMap  map[string]*ruleAsData
+	ruleRowList    []ruleRow              // 规则列表
+	notesMap       map[string]string      // 规则注释(notes)
+	messageMap     map[string]string      // 规则注释(messages)
+	ruleAsDataMap  map[string]*ruleAsData // 数据
 	ruleAsDataList []ruleAsData
-	messages       []Message
+	messages       [][3]string
 	errors         []error // 错误列表
 }
 
@@ -24,12 +27,13 @@ func (v *valid) ValidJson(args ...interface{}) (va *valid) {
 	va = new(valid)
 	var rs []Rule
 	var data interface{}
+	var messages []Message
 	for _, arg := range args {
 		switch arg.(type) {
 		case []Rule:
 			rs = arg.([]Rule)
 		case []Message:
-			v.messages = arg.([]Message)
+			messages = arg.([]Message)
 		case *map[string]interface{}, *[]interface{}, *interface{}:
 			data = arg
 		}
@@ -48,9 +52,8 @@ func (v *valid) ValidJson(args ...interface{}) (va *valid) {
 	}
 	dataValue := reflect.ValueOf(data).Elem()
 	newData := dataValue.Interface()
-	for _, row := range v.ruleRowList {
-		v.splitRuleAsData(row, newData, "")
-	}
+	v.handleRules(newData)
+	v.handleMessageOrNotes(rs, messages, newData)
 	if errs := v.validRule(&newData); errs != nil {
 		va.errors = errs
 		return
@@ -144,6 +147,39 @@ func (v *valid) parseRules(rules []Rule) error {
 	return nil
 }
 
+// 处理规则
+func (v *valid) handleRules(data interface{}) {
+	for _, row := range v.ruleRowList {
+		v.splitRuleAsData(row, data, "")
+	}
+}
+
+// 处理消息和注释
+func (v *valid) handleMessageOrNotes(rules []Rule, messages []Message, data interface{}) {
+	for _, r := range rules {
+		v.splitMessages([3]string{r.Field, r.Notes, "node"}, data, "", 0)
+	}
+	for _, msg := range messages {
+		v.splitMessages([3]string{msg[0], msg[1], "message"}, data, "", 0)
+	}
+	if v.messageMap == nil {
+		v.messageMap = map[string]string{}
+	}
+	if v.notesMap == nil {
+		v.notesMap = map[string]string{}
+	}
+	for _, r := range v.messages {
+		if r[2] == "message" {
+			v.messageMap[r[0]] = r[1]
+		} else if r[2] == "node" {
+			if r[1] == "" {
+				r[1] = r[0]
+			}
+			v.notesMap[r[0]] = r[1]
+		}
+	}
+}
+
 // 拆分规则和数据成一个数据对应一个规则
 func (v *valid) splitRuleAsData(row ruleRow, data interface{}, fullPk string) {
 	pk := strings.TrimPrefix(row.pk, "root")
@@ -177,8 +213,54 @@ func (v *valid) splitRuleAsData(row ruleRow, data interface{}, fullPk string) {
 			if dataMap, ok := data.(map[string]interface{}); ok {
 				v.splitRuleAsData(childRow, dataMap[childRow.field], getFullKey(fullPk, childRow.field))
 			} else {
-				v.splitRuleAsData(childRow, data, getFullKey(fullPk, childRow.field))
+				dataList, _ := data.([]interface{})
+				index, _ := strconv.Atoi(childRow.field)
+				var childData interface{}
+				if len(dataList) > index {
+					childData = dataList[index]
+				}
+				v.splitRuleAsData(childRow, childData, getFullKey(fullPk, childRow.field))
 			}
+		}
+	}
+}
+
+// 拆分规则和消息成一个数据对应一个规则
+func (v *valid) splitMessages(message [3]string, data interface{}, fullPk string, ln int) {
+	msgKeyList := strings.Split(message[0], ".")
+	fullPkList := strings.Split(fullPk, ".")
+	if ln > 0 && len(fullPkList) == ln {
+		v.messages = append(v.messages, [3]string{fullPk, message[1], message[2]})
+	}
+	firstField := msgKeyList[0]
+	if firstField == "" {
+		return
+	}
+	if ln == 0 {
+		ln = len(msgKeyList)
+	}
+	otherField := strings.Join(msgKeyList[1:], ".")
+	message[0] = otherField
+	if firstField == "*" {
+		dataList, _ := data.([]interface{})
+		v.splitMessages(message, dataList, getFullKey(fullPk, "*"), ln)
+		for index, childData := range dataList {
+			v.splitMessages(message, childData, getFullKey(fullPk, index), ln)
+		}
+		if len(dataList) == 0 {
+			v.splitMessages(message, nil, getFullKey(fullPk, 0), ln)
+		}
+	} else {
+		if dataMap, ok := data.(map[string]interface{}); ok {
+			v.splitMessages(message, dataMap[firstField], getFullKey(fullPk, firstField), ln)
+		} else {
+			dataList, _ := data.([]interface{})
+			index, _ := strconv.Atoi(firstField)
+			var childData interface{}
+			if len(dataList) > index {
+				childData = dataList[index]
+			}
+			v.splitMessages(message, childData, getFullKey(fullPk, firstField), ln)
 		}
 	}
 }
@@ -196,8 +278,10 @@ func (v *valid) validRule(data *interface{}) (es []error) {
 				data:          data,
 				notes:         row.notes,
 				fullField:     row.fullPk,
-				validData:     row.data,
+				validData:     &row.data,
 				ruleAsDataMap: v.ruleAsDataMap,
+				messageMap:    v.messageMap,
+				notesMap:      v.notesMap,
 			}
 			var fn methodFunc
 			switch m.method.(type) {
@@ -207,7 +291,7 @@ func (v *valid) validRule(data *interface{}) (es []error) {
 					isErrors = true
 					continue
 				}
-				d.message = getMessagesVal(v.messages, row, me)
+				//d.message = getMessagesVal(v.messages, row.fullPk, me)
 				var fnInterface interface{}
 				var ok bool
 				if fnInterface, ok = methodPool.Load(me); !ok {

@@ -6,8 +6,10 @@ type Data struct {
 	notes         string
 	fullField     string
 	message       string
-	validData     interface{}
-	ruleAsDataMap map[string]*ruleAsData
+	validData     *interface{}
+	notesMap      map[string]string      // 规则注释(notes)
+	messageMap    map[string]string      // 规则注释(messages)
+	ruleAsDataMap map[string]*ruleAsData // 数据
 }
 
 // 获取所有数据
@@ -16,33 +18,34 @@ func (d *Data) GetAllData() interface{} {
 }
 
 // 获取数据且合并成数组
-func (d *Data) GetData(key string) []interface{} {
-	return getData(d.GetAllData(), key)
+func (d *Data) GetData(key string) []dataOne {
+	return getData(d.GetAllData(), key, "")
 }
 
 // 获取数组层级最近的一次相同数据(同一数组中)
 func (d *Data) GetCommonData(key string) interface{} {
 	commonField, _ := getCommonFullField(d.fullField, key)
-	if d.ruleAsDataMap[commonField] == nil {
+	ruleData := d.ruleAsDataMap[commonField]
+	if ruleData == nil {
 		return nil
 	}
-	return d.ruleAsDataMap[commonField].data
+	return ruleData.data
 }
 
 // 获取层级数据，遇到*合并数组
-func (d *Data) GetLevelData(key string) []interface{} {
+func (d *Data) GetLevelData(key string) []dataOne {
 	commonField, otherField := getCommonFullField(d.fullField, key)
-	if d.ruleAsDataMap[commonField] == nil {
+	ruleData := d.ruleAsDataMap[commonField]
+	if ruleData == nil {
 		return nil
 	}
-	commonData := d.ruleAsDataMap[commonField].data
-	list := getData(commonData, otherField)
+	list := getData(ruleData.data, otherField, "")
 	return list
 }
 
 // 获取验证数据
 func (d *Data) GetValidData() interface{} {
-	return d.validData
+	return *d.validData
 }
 
 // 获取注释
@@ -52,6 +55,7 @@ func (d *Data) GetNotes() string {
 
 // 重设验证数据
 func (d *Data) setValidData(value interface{}) {
+	*d.validData = value
 	newData := *d.data
 	ruleData := d.ruleAsDataMap[d.fullField]
 	ruleData.data = value
@@ -60,4 +64,5 @@ func (d *Data) setValidData(value interface{}) {
 		return
 	}
 	newData = upData(newData, d.fullField, value)
+	*d.data = newData
 }

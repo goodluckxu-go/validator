@@ -7,6 +7,13 @@ import (
 func init() {
 	api := newMethodsApi(new(methods))
 	methodPool.Store("required", setMethodFunc(api.Required))
+	methodPool.Store("array", setMethodFunc(api.Array))
+	methodPool.Store("map", setMethodFunc(api.Map))
+	methodPool.Store("string", setMethodFunc(api.String))
+	methodPool.Store("number", setMethodFunc(api.Number))
+	methodPool.Store("integer", setMethodFunc(api.Integer))
+	methodPool.Store("bool", setMethodFunc(api.Bool))
+	methodPool.Store("eq", setMethodFunc(api.Eq))
 	methodPool.Store("valid_field", setMethodFunc(api.ValidField))
 }
 

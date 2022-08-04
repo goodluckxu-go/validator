@@ -100,15 +100,25 @@ err := validator.New(c.Request).ValidJson(&data, []validator.Rule{
 ### 方法
 #### GetAllData() interface{} 
 获取所有数据
-#### GetData(key string) []interface{} 
+#### GetData(key string) []dataOne
 根据key获取数据
 
-例如：传list.*.b.*.b，获得[6,7,8,16,17,18]
+例如：传 list.*.b. *.b ，获得
+~~~json
+[
+    {"fullPk":"list.0.b.0.b","data":6},
+    {"fullPk":"list.0.b.1.b","data":7},
+    {"fullPk":"list.0.b.2.b","data":8},
+    {"fullPk":"list.1.b.0.b","data":16},
+    {"fullPk":"list.1.b.1.b","data":17},
+    {"fullPk":"list.1.b.2.b","data":18}
+]
+~~~
 #### GetCommonData(key string) interface{}
 获取两个值最近的公共数据
 
 例如：当期验证数据list.0.a.a，传入list.*.a.b，获取数据则为list.0.a对象
-#### GetLevelData(key string) []interface{}
+#### GetLevelData(key string) []dataOne
 获取和验证同一层级的数据集合
 
 例如：当期验证数据list.0.a.a，传入list.*.a.b，获取数据则为list.0.a.b数据切片
@@ -131,10 +141,259 @@ validator.SetLangAddr("./zh_cn.json")
 
 ## 所有常规验证规则(rules)
 ### 通用规则
-errors|required
+[valid_condition](#valid_condition) |
+[required](#required) |
+[nullable](#nullable) |
+[len](#len) |
+[min](#min) |
+[max](#max) |
+[date](#date) |
+[date_format](#date_format) |
+[email](#email) |
+[phone](#phone) |
+[in](#in) |
+[unique](#unique) |
+[regexp](#regexp)
+### 类型验证
+[array](#array) |
+[map](#map) |
+[string](#string) |
+[number](#number) |
+[integer](#integer) |
+[bool](#bool)
+### 比较验证
+[gt](#gt) |
+[gte](#gte) |
+[lt](#lt) |
+[lte](#lte) |
+[date_gt](#date_gt) |
+[date_gte](#date_gte) |
+[date_lt](#date_lt) |
+[date_lte](#date_lte)
 
 ## 规则注释(rule notes)
-### errors
-同时验证单条数据的所有规则返回所有错误信息，设置在第一个规则，不填则验证第一个规则
-### required
-验证数据必填
+
+#### <a id="valid_condition_field">valid_condition_field规则</a>
+如果条件满足则验证后面的规则，field为传入字段，condition为条件
+
+condition规则为 =,>,>=,<,<=,in，多个条件用&分隔，格式为= 1&< 5&in 12;15
+~~~
+valid_condition_field:field,condition
+~~~
+
+#### <a id="valid_condition">valid_condition规则</a>
+如果条件满足则验证后面的规则，result为结果，有true,false,1,0四种，其在true,1验证后面数据
+~~~
+valid_condition:result
+~~~
+
+#### <a id="required">required规则</a>
+验证是否必填。null，字符串为""，数字类型为0，bool类型为false，数组为[]，map为{}都不通过
+参数为string,number,bool,array,map，代表string为空不验证，number为0不验证，bool为false不验证,array为[]不验证,map为{}不验证
+~~~
+required:number
+~~~
+
+#### <a id="nullable">nullable规则</a>
+数据为空则不验证后面的规则，字符串为""，数字类型为0，bool类型为false，数组为[]，map为{}都不验证后的单规则
+~~~
+nullable
+~~~
+
+#### <a id="array">array规则</a>
+验证是否是数组
+~~~
+array
+~~~
+
+#### <a id="map">map规则</a>
+验证是否是对象
+~~~
+map
+~~~
+
+#### <a id="string">string规则</a>
+验证是否是字符串
+~~~
+string
+~~~
+
+#### <a id="len">len规则</a>
+验证是长度等于某个数。可获取字符串和数组长度
+~~~
+len:5
+~~~
+
+#### <a id="min">min规则</a>
+验证是长度大于等于某个数。可获取字符串和数组长度
+~~~
+min:5
+~~~
+
+#### <a id="max">max规则</a>
+验证是长度小于等于某个数。可获取字符串和数组长度
+~~~
+max:5
+~~~
+
+#### <a id="number">number规则</a>
+验证是否是数字。可验证数字和字符串的数字
+~~~
+number
+~~~
+
+#### <a id="integer">integer规则</a>
+验证是否是整数。可验证数字和字符串的数字
+~~~
+integer
+~~~
+
+#### <a id="bool">bool规则</a>
+验证是否是布尔类型。可验证整数和布尔类型
+~~~
+bool
+~~~
+
+#### <a id="gt">gt规则</a>
+验证是否大于某个数。可验证数字和字符串的数字
+~~~
+gt:10
+~~~
+
+#### <a id="gte">gte规则</a>
+验证是否大于等于某个数。可验证数字和字符串的数字
+~~~
+gte:10
+~~~
+
+#### <a id="lt">lt规则</a>
+验证是否小于某个数。可验证数字和字符串的数字
+~~~
+lt:10
+~~~
+
+#### <a id="lte">lte规则</a>
+验证是否小于等于某个数。可验证数字和字符串的数字
+~~~
+lte:10
+~~~
+
+#### <a id="date">date规则</a>
+验证是否是日期格式 Y-m-d H:i:s类型
+~~~
+date
+~~~
+
+#### <a id="date_format">date_format规则</a>
+自定义验证是否是日期格式 Y-m-d H:i:s类型，自定义类型 Y年，m月，d日，H时，i分，s秒
+~~~
+date_format:Y-m-d H:i:s
+~~~
+
+#### <a id="date_gt">date_gt规则</a>
+验证日期是否大于某个值
+~~~
+date_gt:2002-02-05
+~~~
+
+#### <a id="date_gte">date_gte规则</a>
+验证日期是否大于等于某个值
+~~~
+date_gte:2002-02-05
+~~~
+
+#### <a id="date_lt">date_lt规则</a>
+验证日期是否小于某个值
+~~~
+date_lt:2002-02-05
+~~~
+
+#### <a id="date_lte">date_lte规则</a>
+验证日期是否小于等于某个值
+~~~
+date_lte:2002-02-05
+~~~
+
+#### <a id="eq_field">eq_field规则</a>
+验证两个字段是否相同，field为传的其他字段
+~~~
+eq_field:field
+~~~
+
+#### <a id="email">email规则</a>
+验证是否是邮箱
+~~~
+email
+~~~
+
+#### <a id="phone">phone规则</a>
+验证是否是手机号
+~~~
+phone
+~~~
+
+#### <a id="in">in规则</a>
+验证是否在数组里面
+~~~
+in:1,2,3
+~~~
+
+#### <a id="unique">unique规则</a>
+验证数组内的值唯一
+~~~
+unique
+~~~
+
+#### <a id="regexp">regexp规则</a>
+验证正则表达式
+~~~
+regexp:^\d$
+~~~
+
+#### <a id="gt_field">gt_field规则</a>
+验证是否大于某个字段。可验证数字和字符串的数字
+~~~
+gt_field:field
+~~~
+
+#### <a id="gte_field">gte_field规则</a>
+验证是否大于等于某个字段。可验证数字和字符串的数字
+~~~
+gte_field:field
+~~~
+
+#### <a id="lt_field">lt_field规则</a>
+验证是否小于某个字段。可验证数字和字符串的数字
+~~~
+lt_field:field
+~~~
+
+#### <a id="lte_field">lte_field规则</a>
+验证是否小于等于某个字段。可验证数字和字符串的数字
+~~~
+lte_field:field
+~~~
+
+#### <a id="date_gt_field">date_gt_field规则</a>
+验证日期是否大于某个字段
+~~~
+date_gt_field:field
+~~~
+
+#### <a id="date_gte_field">date_gte_field规则</a>
+验证日期是否大于等于某个字段
+~~~
+date_gte_field:field
+~~~
+
+#### <a id="date_lt_field">date_lt_field规则</a>
+验证日期是否小于某个字段
+~~~
+date_lt_field:field
+~~~
+
+#### <a id="date_lte_field">date_lte_field规则</a>
+验证日期是否小于等于某个字段
+~~~
+date_lte_field:field
+~~~

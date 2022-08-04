@@ -281,9 +281,12 @@ func parseLang(langAddr string) {
 	}
 }
 
-func getNotes(langStr string, message string, args ...interface{}) error {
+func getMessageError(langStr string, message string, args ...interface{}) error {
 	if len(args) > 0 {
 		langStr = strings.Replace(langStr, "${notes}", fmt.Sprintf("%v", args[0]), -1)
+	}
+	if len(args) > 1 {
+		langStr = strings.Replace(langStr, "${compare}", fmt.Sprintf("%v", args[1]), -1)
 	}
 	if message != "" {
 		langStr = message
@@ -310,57 +313,103 @@ func getCommonFullField(field, otherField string) (string, string) {
 	return strings.Join(rsList, "."), strings.Join(otherFieldList[i:], ".")
 }
 
-func getData(data interface{}, key string) []interface{} {
+func getData(data interface{}, key, parentKey string) []dataOne {
 	if key == "" {
-		return []interface{}{data}
+		return []dataOne{{parentKey, data}}
 	}
 	keyList := strings.Split(key, ".")
 	firstKey := keyList[0]
 	otherKey := strings.Join(keyList[1:], ".")
-	switch data.(type) {
-	case map[string]interface{}:
-		dataMap, _ := data.(map[string]interface{})
-		return getData(dataMap[firstKey], otherKey)
-	case []interface{}:
+	if firstKey == "*" {
 		dataList, _ := data.([]interface{})
-		var newDataList []interface{}
-		for _, childData := range dataList {
-			newDataList = append(newDataList, getData(childData, otherKey)...)
+		if len(dataList) == 0 {
+			dataList = []interface{}{nil}
+		}
+		var newDataList []dataOne
+		for index, childData := range dataList {
+			newDataList = append(newDataList, getData(childData, otherKey, getFullKey(parentKey, index))...)
 		}
 		return newDataList
+	} else {
+		if dataList, ok := data.([]interface{}); ok {
+			index, _ := strconv.Atoi(firstKey)
+			var newDataList []dataOne
+			newDataList = append(newDataList, getData(dataList[index], otherKey, getFullKey(parentKey, index))...)
+			return newDataList
+		} else {
+			dataMap, _ := data.(map[string]interface{})
+			return getData(dataMap[firstKey], otherKey, getFullKey(parentKey, firstKey))
+		}
 	}
-	return []interface{}{data}
 }
 
-func getMessagesVal(messages []Message, row ruleAsData, me string) string {
-	rs := ""
-	fullPkList := strings.Split(row.fullPk, ".")
-	for _, message := range messages {
-		k := message[0]
-		v := message[1]
-		if k == "" {
-			continue
+// 比较两个数是否相等
+func isEqualData(dataOne, dataTwo interface{}) bool {
+	switch dataOne.(type) {
+	case string:
+		if dataOne.(string) == fmt.Sprintf("%v", dataTwo) {
+			return true
 		}
-		kList := strings.Split(k, ".")
-		if kList[len(kList)-1] != me {
-			continue
+	case int, float64:
+		dataOneFloat64 := interfaceToFloat64(dataOne)
+		dataTwoFloat64 := interfaceToFloat64(dataTwo)
+		if dataOneFloat64 == dataTwoFloat64 {
+			return true
 		}
-		kList = kList[0 : len(kList)-1]
-		isSame := true
-		for index, kv := range kList {
-			if len(fullPkList) <= index {
-				isSame = false
-				break
-			}
-			fv := fullPkList[index]
-			if kv != "*" && kv != fv {
-				isSame = false
-				break
+	case bool:
+		if _, ok := dataTwo.(bool); !ok {
+			return false
+		}
+		if compareDataBool, bl := dataTwo.(bool); bl {
+			if dataOne.(bool) == compareDataBool {
+				return true
 			}
 		}
-		if isSame {
-			rs = v
+	default:
+		if reflect.DeepEqual(dataOne, dataTwo) {
+			return true
 		}
 	}
-	return rs
+	return false
+}
+
+// 获取float64类型数据
+func interfaceToFloat64(i interface{}) float64 {
+	if i == nil {
+		return 0
+	}
+	var float64I float64
+	switch i.(type) {
+	case int:
+		float64I = float64(i.(int))
+	case int8:
+		float64I = float64(i.(int8))
+	case int16:
+		float64I = float64(i.(int16))
+	case int32:
+		float64I = float64(i.(int32))
+	case int64:
+		float64I = float64(i.(int64))
+	case uint:
+		float64I = float64(i.(uint))
+	case uint8:
+		float64I = float64(i.(uint8))
+	case uint16:
+		float64I = float64(i.(uint16))
+	case uint32:
+		float64I = float64(i.(uint32))
+	case uint64:
+		float64I = float64(i.(uint64))
+	case float32:
+		float64I = float64(i.(float32))
+	case float64:
+		float64I = i.(float64)
+	case string:
+		float64I, _ = strconv.ParseFloat(i.(string), 64)
+	case bool:
+		if i.(bool) {
+			float64I = 1
+		}
+	}
+	return float64I
 }

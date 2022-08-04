@@ -1,9 +1,5 @@
 package validator
 
-import (
-	"fmt"
-)
-
 type methods struct {
 }
 
@@ -12,37 +8,36 @@ func (m *methods) Errors(d *Data, args ...interface{}) error {
 }
 
 func (m *methods) Required(d *Data, args ...interface{}) error {
-	rs := getNotes(lang.Required, d.message, d.GetNotes())
+	rsErr := getMessageError(lang.Required, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {
-		return rs
+		return rsErr
 	}
 	switch validData.(type) {
 	case string:
 		if validData.(string) == "" {
-			return rs
+			return rsErr
 		}
 	case float64:
 		if validData.(float64) == 0 {
-			return rs
+			return rsErr
 		}
 	case bool:
 		if validData.(bool) == false {
-			return rs
+			return rsErr
 		}
 	case []interface{}:
 		if len(validData.([]interface{})) == 0 {
-			return rs
+			return rsErr
 		}
 	case map[string]interface{}:
 		if len(validData.(map[string]interface{})) == 0 {
-			return rs
+			return rsErr
 		}
 	}
 	return nil
 }
 
 func (m *methods) ValidField(d *Data, args ...interface{}) error {
-	fmt.Println(d.validData, d.GetValidData(), args)
 	return nil
 }
