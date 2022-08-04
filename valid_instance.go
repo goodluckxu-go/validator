@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"github.com/goodluckxu-go/validator/param"
 	"net/http"
 )
 
@@ -31,5 +32,11 @@ func SetLangAddr(langAddr string) {
 
 // 设置全局验证规则方法
 func RegisterMethod(key string, fn func(d *Data, args ...interface{}) error) {
-	methodPool.Store(key, setMethodFunc(fn))
+	methodPool.Store(key, setMethodFunc(func(d *Data, args ...*param.Param) error {
+		var newArgs []interface{}
+		for _, arg := range args {
+			newArgs = append(newArgs, arg.Value)
+		}
+		return fn(d, newArgs...)
+	}))
 }

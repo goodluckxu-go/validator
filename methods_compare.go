@@ -1,22 +1,20 @@
 package validator
 
 import (
-	"test/validator/param"
-	"test/validator/types"
+	"github.com/goodluckxu-go/validator/param"
+	"github.com/goodluckxu-go/validator/types"
 )
 
-func (m *methods) Eq(d *Data, args ...interface{}) error {
+func (m *methods) Eq(d *Data, args ...*param.Param) error {
 	var fType *param.Param
 	var val interface{}
 	for _, arg := range args {
-		if argParam, ok := arg.(*param.Param); ok {
-			switch argParam {
-			case types.Field:
-				fType = argParam
-			default:
-				if argParam.Value != nil {
-					val = argParam.Value
-				}
+		switch arg {
+		case types.Field:
+			fType = arg
+		default:
+			if arg.Value != nil {
+				val = arg.Value
 			}
 		}
 	}
@@ -41,18 +39,18 @@ func (m *methods) Eq(d *Data, args ...interface{}) error {
 	return nil
 }
 
-func (m *methods) Gt(d *Data, args ...interface{}) error {
+func (m *methods) Gt(d *Data, args ...param.Param) error {
 	return nil
 }
 
-func (m *methods) Gte(d *Data, args ...interface{}) error {
+func (m *methods) Gte(d *Data, args ...param.Param) error {
 	return nil
 }
 
-func (m *methods) Lt(d *Data, args ...interface{}) error {
+func (m *methods) Lt(d *Data, args ...param.Param) error {
 	return nil
 }
 
-func (m *methods) Lte(d *Data, args ...interface{}) error {
+func (m *methods) Lte(d *Data, args ...param.Param) error {
 	return nil
 }

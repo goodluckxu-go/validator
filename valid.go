@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"github.com/goodluckxu-go/validator/param"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -309,7 +310,15 @@ func (v *valid) validRule(data *interface{}) (es []error) {
 				es = append(es, errors.New("未知错误"))
 				return
 			}
-			if err := fn(d, m.args...); err != nil {
+			var newArgs []*param.Param
+			for _, arg := range m.args {
+				if argParam, ok := arg.(*param.Param); ok {
+					newArgs = append(newArgs, argParam)
+				} else {
+					newArgs = append(newArgs, param.SetValue(arg))
+				}
+			}
+			if err := fn(d, newArgs...); err != nil {
 				es = append(es, err)
 			}
 			if !isErrors {

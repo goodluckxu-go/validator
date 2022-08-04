@@ -1,13 +1,15 @@
 package validator
 
+import "github.com/goodluckxu-go/validator/param"
+
 type methods struct {
 }
 
-func (m *methods) Errors(d *Data, args ...interface{}) error {
+func (m *methods) Errors(d *Data, args ...*param.Param) error {
 	return nil
 }
 
-func (m *methods) Required(d *Data, args ...interface{}) error {
+func (m *methods) Required(d *Data, args ...*param.Param) error {
 	rsErr := getMessageError(lang.Required, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {
@@ -38,6 +40,6 @@ func (m *methods) Required(d *Data, args ...interface{}) error {
 	return nil
 }
 
-func (m *methods) ValidField(d *Data, args ...interface{}) error {
+func (m *methods) ValidField(d *Data, args ...*param.Param) error {
 	return nil
 }

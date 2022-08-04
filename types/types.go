@@ -1,6 +1,8 @@
 package types
 
-import "test/validator/param"
+import (
+	"github.com/goodluckxu-go/validator/param"
+)
 
 var (
 	Array   *param.Param // 数组类型

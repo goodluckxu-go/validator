@@ -1,10 +1,10 @@
 package validator
 
+import "github.com/goodluckxu-go/validator/param"
+
 var (
-	Method = method{
-		nil, nil, 1, 2, 3, 4, 5, 6, 7, 8,
-	} // 规则方法
-	lang language // 语言
+	Method method   // 规则方法
+	lang   language // 语言
 )
 
 type fieldType uint8
@@ -13,14 +13,6 @@ type fieldType uint8
 type method struct {
 	methods []methodData
 	list    []*method
-	Array   fieldType // 数组类型
-	Map     fieldType // 对象类型
-	String  fieldType // 字符串类型
-	Number  fieldType // 数字类型
-	Integer fieldType // 整型
-	Bool    fieldType // 布尔型
-	Date    fieldType // 日期类型
-	Field   fieldType // 字段类型
 }
 
 type methodData struct {
@@ -36,18 +28,28 @@ func (m *method) List(me ...*method) []*method {
 func (m *method) SetFun(fn func(d *Data, args ...interface{}) error, args ...interface{}) (ms *method) {
 	ms = getInstance(m).(*method)
 	ms.methods = append(ms.methods, methodData{
-		method: setMethodFunc(fn),
-		args:   args,
+		method: setMethodFunc(func(d *Data, args ...*param.Param) error {
+			var newArgs []interface{}
+			for _, arg := range args {
+				newArgs = append(newArgs, arg.Value)
+			}
+			return fn(d, newArgs...)
+		}),
+		args: args,
 	})
 	return
 }
 
 // 设置默认验证方法
-func (m *method) SetMethod(r string, args ...interface{}) (ms *method) {
+func (m *method) SetMethod(r string, args ...*param.Param) (ms *method) {
 	ms = getInstance(m).(*method)
+	var newArgs []interface{}
+	for _, arg := range args {
+		newArgs = append(newArgs, arg)
+	}
 	ms.methods = append(ms.methods, methodData{
 		method: r,
-		args:   args,
+		args:   newArgs,
 	})
 	return
 }
