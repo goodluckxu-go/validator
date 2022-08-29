@@ -413,3 +413,44 @@ func interfaceToFloat64(i interface{}) float64 {
 	}
 	return float64I
 }
+
+func inArray(val interface{}, array interface{}) (exists bool) {
+	exists = false
+	switch reflect.TypeOf(array).Kind() {
+	case reflect.Slice:
+		s := reflect.ValueOf(array)
+
+		for i := 0; i < s.Len(); i++ {
+			if reflect.DeepEqual(val, s.Index(i).Interface()) == true {
+				exists = true
+				return
+			}
+		}
+	}
+	return
+}
+
+// 验证参数
+//  args 参数
+//  minNum,maxNum 最小和最大参数数量
+//  ins 需要在这个列表中
+func validArgs(args []interface{}, minNum, maxNum int, ins ...interface{}) error {
+	if minNum == maxNum && len(args) != minNum {
+		return fmt.Errorf("验证规则错误: 参数数量必须是%d", minNum)
+	}
+	if len(args) < minNum || len(args) > maxNum {
+		return fmt.Errorf("验证规则错误: 参数数量必须在%d-%d之间", minNum, maxNum)
+	}
+	for index, arg := range args {
+		if len(ins) <= index {
+			continue
+		}
+		if ins[index] == nil {
+			continue
+		}
+		if !inArray(arg, ins[index]) {
+			return fmt.Errorf("验证规则错误: 第%d个参数%v不在%v中", index+1, arg, ins[index])
+		}
+	}
+	return nil
+}

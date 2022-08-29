@@ -1,28 +1,20 @@
 package validator
 
 import (
-	"github.com/goodluckxu-go/validator/param"
-	"github.com/goodluckxu-go/validator/types"
+	"fmt"
+	"test/validator/param"
 )
 
-func (m *methods) Eq(d *Data, args ...*param.Param) error {
-	var fType *param.Param
-	var val interface{}
-	for _, arg := range args {
-		switch arg {
-		case types.Field:
-			fType = arg
-		default:
-			if arg.Value != nil {
-				val = arg.Value
-			}
-		}
+func (m *methods) Eq(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 1, 1); err != nil {
+		return err
 	}
+	val := args[0]
 	validData := d.GetValidData()
 	validNotes := d.GetNotes()
-	if fType == types.Field {
-		valStr, _ := val.(string)
-		for _, vMap := range d.GetLevelData(valStr) {
+	if file, ok := val.(param.File); ok {
+		for _, vMap := range d.GetLevelData(string(file)) {
+			fmt.Println(validData, vMap.data)
 			if !isEqualData(validData, vMap.data) {
 				compare := d.notesMap[vMap.fullPk]
 				if compare == "" {
@@ -39,18 +31,18 @@ func (m *methods) Eq(d *Data, args ...*param.Param) error {
 	return nil
 }
 
-func (m *methods) Gt(d *Data, args ...param.Param) error {
+func (m *methods) Gt(d *Data, args ...interface{}) error {
 	return nil
 }
 
-func (m *methods) Gte(d *Data, args ...param.Param) error {
+func (m *methods) Gte(d *Data, args ...interface{}) error {
 	return nil
 }
 
-func (m *methods) Lt(d *Data, args ...param.Param) error {
+func (m *methods) Lt(d *Data, args ...interface{}) error {
 	return nil
 }
 
-func (m *methods) Lte(d *Data, args ...param.Param) error {
+func (m *methods) Lte(d *Data, args ...interface{}) error {
 	return nil
 }

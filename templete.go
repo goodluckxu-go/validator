@@ -1,7 +1,5 @@
 package validator
 
-import "github.com/goodluckxu-go/validator/param"
-
 var (
 	Method method   // 规则方法
 	lang   language // 语言
@@ -28,28 +26,18 @@ func (m *method) List(me ...*method) []*method {
 func (m *method) SetFun(fn func(d *Data, args ...interface{}) error, args ...interface{}) (ms *method) {
 	ms = getInstance(m).(*method)
 	ms.methods = append(ms.methods, methodData{
-		method: setMethodFunc(func(d *Data, args ...*param.Param) error {
-			var newArgs []interface{}
-			for _, arg := range args {
-				newArgs = append(newArgs, arg.Value)
-			}
-			return fn(d, newArgs...)
-		}),
-		args: args,
+		method: setMethodFunc(fn),
+		args:   args,
 	})
 	return
 }
 
 // 设置默认验证方法
-func (m *method) SetMethod(r string, args ...*param.Param) (ms *method) {
+func (m *method) SetMethod(r string, args ...interface{}) (ms *method) {
 	ms = getInstance(m).(*method)
-	var newArgs []interface{}
-	for _, arg := range args {
-		newArgs = append(newArgs, arg)
-	}
 	ms.methods = append(ms.methods, methodData{
 		method: r,
-		args:   newArgs,
+		args:   args,
 	})
 	return
 }

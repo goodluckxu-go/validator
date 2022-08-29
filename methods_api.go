@@ -1,25 +1,23 @@
 package validator
 
 import (
-	"github.com/goodluckxu-go/validator/param"
 	"sync"
 )
 
 var methodPool sync.Map
 
-type methodFunc func(d *Data, args ...*param.Param) error
+type methodFunc func(d *Data, args ...interface{}) error
 
 type methodsApi interface {
-	Required(d *Data, args ...*param.Param) error
-	Array(d *Data, args ...*param.Param) error
-	Map(d *Data, args ...*param.Param) error
-	String(d *Data, args ...*param.Param) error
-	Number(d *Data, args ...*param.Param) error
-	Integer(d *Data, args ...*param.Param) error
-	Bool(d *Data, args ...*param.Param) error
-	Eq(d *Data, args ...*param.Param) error
-
-	ValidField(d *Data, args ...*param.Param) error
+	Required(d *Data, args ...interface{}) error
+	ValidCondition(d *Data, args ...interface{}) error
+	Array(d *Data, args ...interface{}) error
+	Map(d *Data, args ...interface{}) error
+	String(d *Data, args ...interface{}) error
+	Number(d *Data, args ...interface{}) error
+	Integer(d *Data, args ...interface{}) error
+	Bool(d *Data, args ...interface{}) error
+	Eq(d *Data, args ...interface{}) error
 }
 
 func newMethodsApi(api methodsApi) methodsApi {
