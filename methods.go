@@ -1,6 +1,8 @@
 package validator
 
-import "test/validator/condition"
+import (
+	"errors"
+)
 
 type methods struct {
 }
@@ -47,11 +49,50 @@ func (m *methods) ValidCondition(d *Data, args ...interface{}) error {
 	if err := validArgs(args, 2, -1); err != nil {
 		return err
 	}
-	for _, arg := range args {
-		switch arg.(type) {
-		case *condition.Formula:
+	bl, err := formulaCompare(d, args...)
+	if err != nil {
+		return err
+	}
+	if !bl {
+		return nil
+	}
+	return errors.New("")
+}
 
+func (m *methods) Nullable(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 0, 0); err != nil {
+		return err
+	}
+	validData := d.GetValidData()
+	isNull := false
+	if validData == nil {
+		isNull = true
+	} else {
+		switch validData.(type) {
+		case string:
+			if validData.(string) == "" {
+				isNull = true
+			}
+		case float64:
+			if validData.(float64) == 0 {
+				isNull = true
+			}
+		case bool:
+			if validData.(bool) == false {
+				isNull = true
+			}
+		case []interface{}:
+			if len(validData.([]interface{})) == 0 {
+				isNull = true
+			}
+		case map[string]interface{}:
+			if len(validData.(map[string]interface{})) == 0 {
+				isNull = true
+			}
 		}
 	}
-	return nil
+	if isNull {
+		return nil
+	}
+	return errors.New("")
 }

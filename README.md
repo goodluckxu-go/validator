@@ -162,6 +162,7 @@ validator.SetLangAddr("./zh_cn.json")
 [integer](#integer) |
 [bool](#bool)
 ### 比较验证
+[eq](#eq) |
 [gt](#gt) |
 [gte](#gte) |
 [lt](#lt) |
@@ -173,49 +174,59 @@ validator.SetLangAddr("./zh_cn.json")
 
 ## 规则注释(rule notes)
 
-#### <a id="valid_condition_field">valid_condition_field规则</a>
-如果条件满足则验证后面的规则，field为传入字段，condition为条件
-
-condition规则为 =,>,>=,<,<=,in，多个条件用&分隔，格式为= 1&< 5&in 12;15
-~~~
-valid_condition_field:field,condition
-~~~
-
 #### <a id="valid_condition">valid_condition规则</a>
-如果条件满足则验证后面的规则，result为结果，有true,false,1,0四种，其在true,1验证后面数据
-~~~
-valid_condition:result
+<span style="color:red;">args参数说明:</span> 
+
+<span style="color:red;">1. &&是并且,||是或者</span>
+
+<span style="color:red;">2. &&和||之间的数据为验证公式，公式结果为布尔型</span>
+
+<span style="color:red;">3. 公式目前占1-3个字符</span>
+
+<span style="color:red;">4. 公式为 >,1则表示验证数据大于1</span>
+
+<span style="color:red;">5. 公式为 3,>,1则表示判断3和1的大小</span>
+
+<span style="color:red;">6. 公式为 param.File("test.a.b"),=,5表示，字段test.a.b的值和5是否相等</span>
+
+<span style="color:red;">7. 公式可以直接为true或false</span>
+
+<span style="color:red;">8. condition.Brackets表示括号，里面值和args一样规则</span>
+
+<span style="color:red;">9. args公式为true则验证，否在跳过验证</span>
+~~~go
+validator.Method.SetMethod("valid_condition", "=", 1, "&&", "<", 10, "&&", param.File("list.*.a.a"), "=", 12, "&&", condition.Brackets(">", 2)),
 ~~~
 
 #### <a id="required">required规则</a>
 验证是否必填。null，字符串为""，数字类型为0，bool类型为false，数组为[]，map为{}都不通过
 参数为string,number,bool,array,map，代表string为空不验证，number为0不验证，bool为false不验证,array为[]不验证,map为{}不验证
-~~~
-required:number
+~~~go
+validator.Method.SetMethod("required", "string")
 ~~~
 
 #### <a id="nullable">nullable规则</a>
 数据为空则不验证后面的规则，字符串为""，数字类型为0，bool类型为false，数组为[]，map为{}都不验证后的单规则
-~~~
-nullable
+~~~go
+validator.Method.SetMethod("nullable")
 ~~~
 
 #### <a id="array">array规则</a>
 验证是否是数组
-~~~
-array
+~~~go
+validator.Method.SetMethod("array")
 ~~~
 
 #### <a id="map">map规则</a>
 验证是否是对象
-~~~
-map
+~~~go
+validator.Method.SetMethod("map")
 ~~~
 
 #### <a id="string">string规则</a>
 验证是否是字符串
-~~~
-string
+~~~go
+validator.Method.SetMethod("string")
 ~~~
 
 #### <a id="len">len规则</a>
@@ -238,44 +249,44 @@ max:5
 
 #### <a id="number">number规则</a>
 验证是否是数字。可验证数字和字符串的数字
-~~~
-number
+~~~go
+validator.Method.SetMethod("number")
 ~~~
 
 #### <a id="integer">integer规则</a>
 验证是否是整数。可验证数字和字符串的数字
-~~~
-integer
+~~~go
+validator.Method.SetMethod("integer")
 ~~~
 
 #### <a id="bool">bool规则</a>
 验证是否是布尔类型。可验证整数和布尔类型
-~~~
-bool
+~~~go
+validator.Method.SetMethod("bool")
 ~~~
 
 #### <a id="gt">gt规则</a>
-验证是否大于某个数。可验证数字和字符串的数字
-~~~
-gt:10
+验证是否大于某个数。可验证数字和字符串的数字，参数可以是param.File("test")字段值
+~~~go
+validator.Method.SetMethod("gt",5)
 ~~~
 
 #### <a id="gte">gte规则</a>
-验证是否大于等于某个数。可验证数字和字符串的数字
-~~~
-gte:10
+验证是否大于等于某个数。可验证数字和字符串的数字，参数可以是param.File("test")字段值
+~~~go
+validator.Method.SetMethod("gte",5)
 ~~~
 
 #### <a id="lt">lt规则</a>
-验证是否小于某个数。可验证数字和字符串的数字
-~~~
-lt:10
+验证是否小于某个数。可验证数字和字符串的数字，参数可以是param.File("test")字段值
+~~~go
+validator.Method.SetMethod("lt",5)
 ~~~
 
 #### <a id="lte">lte规则</a>
-验证是否小于等于某个数。可验证数字和字符串的数字
-~~~
-lte:10
+验证是否小于等于某个数。可验证数字和字符串的数字，参数可以是param.File("test")字段值
+~~~go
+validator.Method.SetMethod("lte",5)
 ~~~
 
 #### <a id="date">date规则</a>
@@ -314,10 +325,10 @@ date_lt:2002-02-05
 date_lte:2002-02-05
 ~~~
 
-#### <a id="eq_field">eq_field规则</a>
-验证两个字段是否相同，field为传的其他字段
-~~~
-eq_field:field
+#### <a id="eq">eq规则</a>
+验证两个字段是否相同，参数可以是param.File("test")字段值
+~~~go
+validator.Method.SetMethod("eq",5)
 ~~~
 
 #### <a id="email">email规则</a>

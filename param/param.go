@@ -1,7 +1,5 @@
 package param
 
-type File string
+type File string // 字段
 
-func Add(args ...interface{}) {
-
-}
+type Date string // 日期

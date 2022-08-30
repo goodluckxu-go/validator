@@ -10,10 +10,12 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"test/validator/condition"
 	"test/validator/param"
+	"time"
 )
 
 // 读取body内容
@@ -289,6 +291,7 @@ func getMessageError(langStr string, message string, args ...interface{}) error 
 	}
 	if len(args) > 1 {
 		langStr = strings.Replace(langStr, "${compare}", fmt.Sprintf("%v", args[1]), -1)
+		langStr = strings.Replace(langStr, "${len}", fmt.Sprintf("%v", args[1]), -1)
 	}
 	if message != "" {
 		langStr = message
@@ -459,6 +462,100 @@ func inArray(val interface{}, array interface{}) (exists bool) {
 	return
 }
 
+// 字符串转时间
+func timeParse(date string) (time.Time, error) {
+	formatAtByte := []byte("0000-00-00 00:00:00")
+	copy(formatAtByte, []byte(date))
+	return time.ParseInLocation("2006-01-02 15:04:05", string(formatAtByte), time.Local)
+}
+
+/**
+ * 验证时间
+ */
+func validDate(date string, format string) (err error) {
+	err = fmt.Errorf("日期格式和值不匹配，格式：%s, 值：%s", format, date)
+	format = strings.ReplaceAll(format, "Y", "YYYY")
+	format = strings.ReplaceAll(format, "m", "mm")
+	format = strings.ReplaceAll(format, "d", "dd")
+	format = strings.ReplaceAll(format, "H", "HH")
+	format = strings.ReplaceAll(format, "i", "ii")
+	format = strings.ReplaceAll(format, "s", "ss")
+	if len(date) != len(format) {
+		return
+	}
+	if err := validSingleDate("YYYY", &date, &format); err != nil {
+		return err
+	}
+	if err := validSingleDate("mm", &date, &format); err != nil {
+		return err
+	}
+	if err := validSingleDate("dd", &date, &format); err != nil {
+		return err
+	}
+	if err := validSingleDate("HH", &date, &format); err != nil {
+		return err
+	}
+	if err := validSingleDate("ii", &date, &format); err != nil {
+		return err
+	}
+	if err := validSingleDate("ss", &date, &format); err != nil {
+		return err
+	}
+	if date != format {
+		return
+	}
+	return nil
+}
+
+func validSingleDate(single string, date, format *string) error {
+	lenSingle := len(single)
+	newDate := *date
+	newFormat := *format
+	for {
+		index := strings.Index(newFormat, single)
+		if index == -1 {
+			break
+		}
+		validDate := newDate[index : index+lenSingle]
+		switch single {
+		case "YYYY":
+			if !regexp.MustCompile(`\d{4}`).MatchString(validDate) {
+				return fmt.Errorf("年格式和值不匹配，格式：Y, 值：%s", validDate)
+			}
+		case "mm":
+			validInt64, _ := strconv.ParseInt(validDate, 10, 64)
+			if validInt64 < 1 || validInt64 > 12 {
+				return fmt.Errorf("月格式和值不匹配，格式：m, 值：%s", validDate)
+			}
+		case "dd":
+			validInt64, _ := strconv.ParseInt(validDate, 10, 64)
+			if validInt64 < 1 || validInt64 > 31 {
+				return fmt.Errorf("日格式和值不匹配，格式：d, 值：%s", validDate)
+			}
+		case "HH":
+			validInt64, _ := strconv.ParseInt(validDate, 10, 64)
+			if validInt64 < 0 || validInt64 > 23 {
+				return fmt.Errorf("时格式和值不匹配，格式：H, 值：%s", validDate)
+			}
+		case "ii":
+			validInt64, _ := strconv.ParseInt(validDate, 10, 64)
+			if validInt64 < 0 || validInt64 > 59 {
+				return fmt.Errorf("分格式和值不匹配，格式：i, 值：%s", validDate)
+			}
+		case "ss":
+			validInt64, _ := strconv.ParseInt(validDate, 10, 64)
+			if validInt64 < 0 || validInt64 > 59 {
+				return fmt.Errorf("秒格式和值不匹配，格式：s, 值：%s", validDate)
+			}
+		}
+		newFormat = newFormat[0:index] + newFormat[index+lenSingle:]
+		newDate = newDate[0:index] + newDate[index+lenSingle:]
+	}
+	*date = newDate
+	*format = newFormat
+	return nil
+}
+
 // 验证参数
 //  args 参数
 //  minNum,maxNum 最小和最大参数数量
@@ -488,14 +585,14 @@ func validArgs(args []interface{}, minNum, maxNum int, ins ...interface{}) error
 }
 
 // 公式比较
-func FormulaCompare(d *Data, args ...interface{}) (bool, error) {
+func formulaCompare(d *Data, args ...interface{}) (bool, error) {
 	var formulaList [][]interface{}
 	var formulaArgs []interface{}
 	var formulaSymbolList []string
 	for _, arg := range args {
 		switch arg.(type) {
 		case *condition.Formula:
-			bl, err := FormulaCompare(d, arg.(*condition.Formula).Args...)
+			bl, err := formulaCompare(d, arg.(*condition.Formula).Args...)
 			if err != nil {
 				return false, err
 			}
@@ -517,123 +614,115 @@ func FormulaCompare(d *Data, args ...interface{}) (bool, error) {
 		formulaList = append(formulaList, formulaArgs)
 	}
 	var index int
-	isBool := false
-	var loopNumber int
-	for {
-		for index, formulaArgs = range formulaList {
-			if len(formulaArgs) == 1 {
-				if rs, ok := formulaArgs[0].(bool); ok {
-					isBool = rs
-					continue
-				}
-				return false, fmt.Errorf("公式错误: %v", formulaArgs)
+	var isBool bool
+	for index, formulaArgs = range formulaList {
+		if len(formulaArgs) == 1 {
+			if rs, ok := formulaArgs[0].(bool); ok {
+				isBool = rs
+				continue
 			}
-			var leftData interface{}
-			var rightDataList []interface{}
-			var symbol string
-			if len(formulaArgs) == 2 {
-				symbol, _ = formulaArgs[0].(string)
-				leftData = d.GetValidData()
-				rightDataList = append(rightDataList, formulaArgs[1])
-			} else if len(formulaArgs) == 3 {
-				symbol, _ = formulaArgs[1].(string)
-				leftData = formulaArgs[0]
-				if file, ok := formulaArgs[2].(param.File); ok {
-					for _, data := range d.GetLevelData(string(file)) {
-						rightDataList = append(rightDataList, data.data)
-					}
-				} else {
-					rightDataList = append(rightDataList, formulaArgs[2])
-				}
-			} else {
-				return false, fmt.Errorf("公式错误: %v", formulaArgs)
-			}
-			if loopNumber == 0 {
-				loopNumber = len(rightDataList)
-			}
-			formulaSymbol := ""
-			if len(formulaSymbolList) > index-1 && index > 0 {
-				formulaSymbol = formulaSymbolList[index-1]
-			}
-			var err error
-			var compareData int
-			var compareBool bool
-			for _, rightData := range rightDataList {
-				switch symbol {
-				case ">":
-					compareData, err = isCompareData(leftData, rightData)
-					if err != nil {
-						return false, err
-					}
-					if compareData == 1 {
-						compareBool = true
-					}
-				case ">=":
-					compareData, err = isCompareData(leftData, rightData)
-					if err != nil {
-						return false, err
-					}
-					if compareData != -1 {
-						compareBool = true
-					}
-				case "<":
-					compareData, err = isCompareData(leftData, rightData)
-					if err != nil {
-						return false, err
-					}
-					if compareData == -1 {
-						compareBool = true
-					}
-				case "<=":
-					compareData, err = isCompareData(leftData, rightData)
-					if err != nil {
-						return false, err
-					}
-					if compareData != 1 {
-						compareBool = true
-					}
-				case "=":
-					compareData, err = isCompareData(leftData, rightData)
-					if err != nil {
-						return false, err
-					}
-					if compareData == 0 {
-						compareBool = true
-					}
-				case "!=":
-					compareData, err = isCompareData(leftData, rightData)
-					if err != nil {
-						return false, err
-					}
-					if compareData != 0 {
-						compareBool = true
-					}
-				case "in":
-				case "not":
-				default:
-					return false, fmt.Errorf("公式错误: %v", formulaArgs)
-				}
-				rightDataList = rightDataList[1:]
-				break
-			}
-			switch formulaSymbol {
-			case "&&":
-				if !isBool {
-					continue
-				}
-				isBool = compareBool
-			case "||":
-				if isBool {
-					continue
-				}
-				isBool = compareBool
-			default:
-				isBool = compareBool
-			}
+			return false, fmt.Errorf("公式错误: %v", formulaArgs)
 		}
-		loopNumber--
-		if loopNumber <= 0 {
-			break
+		var leftData interface{}
+		var rightData interface{}
+		var symbol string
+		if len(formulaArgs) == 2 {
+			symbol, _ = formulaArgs[0].(string)
+			leftData = d.GetValidData()
+			rightData = formulaArgs[1]
+		} else if len(formulaArgs) == 3 {
+			symbol, _ = formulaArgs[1].(string)
+			leftData = formulaArgs[0]
+			rightData = formulaArgs[2]
+			if file, ok := formulaArgs[0].(param.File); ok {
+				rightData = true
+				for _, data := range d.GetLevelData(string(file)) {
+					bl, err := formulaCompare(d, data.data, symbol, formulaArgs[2])
+					if err != nil {
+						return false, err
+					}
+					if !bl {
+						rightData = false
+					}
+				}
+				leftData = true
+				symbol = "="
+			}
+		} else {
+			return false, fmt.Errorf("公式错误: %v", formulaArgs)
+		}
+		formulaSymbol := ""
+		if len(formulaSymbolList) > index-1 && index > 0 {
+			formulaSymbol = formulaSymbolList[index-1]
+		}
+		var err error
+		var compareData int
+		var compareBool bool
+		switch symbol {
+		case ">":
+			compareData, err = isCompareData(leftData, rightData)
+			if err != nil {
+				return false, err
+			}
+			if compareData == 1 {
+				compareBool = true
+			}
+		case ">=":
+			compareData, err = isCompareData(leftData, rightData)
+			if err != nil {
+				return false, err
+			}
+			if compareData != -1 {
+				compareBool = true
+			}
+		case "<":
+			compareData, err = isCompareData(leftData, rightData)
+			if err != nil {
+				return false, err
+			}
+			if compareData == -1 {
+				compareBool = true
+			}
+		case "<=":
+			compareData, err = isCompareData(leftData, rightData)
+			if err != nil {
+				return false, err
+			}
+			if compareData != 1 {
+				compareBool = true
+			}
+		case "=":
+			if isEqualData(leftData, rightData) {
+				compareBool = true
+			}
+		case "!=":
+			if !isEqualData(leftData, rightData) {
+				compareBool = true
+			}
+		case "in":
+			if inArray(leftData, rightData) {
+				compareBool = true
+			}
+		case "not":
+			if !inArray(leftData, rightData) {
+				compareBool = true
+			}
+		default:
+			return false, fmt.Errorf("公式错误: %v", formulaArgs)
+		}
+		switch formulaSymbol {
+		case "&&":
+			if !isBool {
+				continue
+			}
+			isBool = compareBool
+		case "||":
+			if isBool {
+				continue
+			}
+			isBool = compareBool
+		default:
+			isBool = compareBool
 		}
 	}
 	return isBool, nil

@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"github.com/gookit/color"
 	"strconv"
 )
 
@@ -107,4 +108,27 @@ func (m *methods) Bool(d *Data, args ...interface{}) error {
 		return nil
 	}
 	return rsErr
+}
+
+func (m *methods) Date(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 0, 1); err != nil {
+		return err
+	}
+	rsErr := getMessageError(lang.Date, d.message, d.GetNotes())
+	dateString, ok := d.GetValidData().(string)
+	if !ok {
+		return rsErr
+	}
+	if len(args) == 0 {
+		if _, err := timeParse(dateString); err != nil {
+			return rsErr
+		}
+		return nil
+	}
+	formatString, _ := args[0].(string)
+	if err := validDate(dateString, formatString); err != nil {
+		color.Error.Println(err)
+		return rsErr
+	}
+	return nil
 }

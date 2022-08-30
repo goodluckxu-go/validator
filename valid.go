@@ -284,9 +284,10 @@ func (v *valid) validRule(data *interface{}) (es []error) {
 				notesMap:      v.notesMap,
 			}
 			var fn methodFunc
+			var me string
 			switch m.method.(type) {
 			case string:
-				me := m.method.(string)
+				me = m.method.(string)
 				if me == "errors" {
 					isErrors = true
 					continue
@@ -309,7 +310,17 @@ func (v *valid) validRule(data *interface{}) (es []error) {
 				es = append(es, errors.New("未知错误"))
 				return
 			}
-			if err := fn(d, m.args...); err != nil {
+			err := fn(d, m.args...)
+			// 是否验证下面数据
+			if inArray(me, []string{"valid_condition", "nullable"}) {
+				if err == nil {
+					break
+				}
+				if err.Error() == "" {
+					continue
+				}
+			}
+			if err != nil {
 				es = append(es, err)
 			}
 			if !isErrors {
