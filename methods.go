@@ -1,5 +1,7 @@
 package validator
 
+import "test/validator/condition"
+
 type methods struct {
 }
 
@@ -42,5 +44,14 @@ func (m *methods) Required(d *Data, args ...interface{}) error {
 }
 
 func (m *methods) ValidCondition(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 2, -1); err != nil {
+		return err
+	}
+	for _, arg := range args {
+		switch arg.(type) {
+		case *condition.Formula:
+
+		}
+	}
 	return nil
 }

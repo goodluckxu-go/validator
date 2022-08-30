@@ -5,6 +5,9 @@ import (
 )
 
 func (m *methods) Array(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 0, 0); err != nil {
+		return err
+	}
 	rsErr := getMessageError(lang.Array, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {
@@ -17,6 +20,9 @@ func (m *methods) Array(d *Data, args ...interface{}) error {
 }
 
 func (m *methods) Map(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 0, 0); err != nil {
+		return err
+	}
 	rsErr := getMessageError(lang.Map, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {
@@ -28,6 +34,9 @@ func (m *methods) Map(d *Data, args ...interface{}) error {
 	return rsErr
 }
 func (m *methods) String(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 0, 0); err != nil {
+		return err
+	}
 	rsErr := getMessageError(lang.String, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {
@@ -39,6 +48,9 @@ func (m *methods) String(d *Data, args ...interface{}) error {
 	return rsErr
 }
 func (m *methods) Number(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 0, 0); err != nil {
+		return err
+	}
 	rsErr := getMessageError(lang.Number, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {
@@ -57,6 +69,9 @@ func (m *methods) Number(d *Data, args ...interface{}) error {
 }
 
 func (m *methods) Integer(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 0, 0); err != nil {
+		return err
+	}
 	rsErr := getMessageError(lang.Integer, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {
@@ -80,6 +95,9 @@ func (m *methods) Integer(d *Data, args ...interface{}) error {
 }
 
 func (m *methods) Bool(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 0, 0); err != nil {
+		return err
+	}
 	rsErr := getMessageError(lang.Bool, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {

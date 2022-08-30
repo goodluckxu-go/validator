@@ -6,6 +6,7 @@ import (
 
 func init() {
 	api := newMethodsApi(new(methods))
+	methodPool.Store("valid_condition", setMethodFunc(api.ValidCondition))
 	methodPool.Store("required", setMethodFunc(api.Required))
 	methodPool.Store("array", setMethodFunc(api.Array))
 	methodPool.Store("map", setMethodFunc(api.Map))
@@ -14,7 +15,10 @@ func init() {
 	methodPool.Store("integer", setMethodFunc(api.Integer))
 	methodPool.Store("bool", setMethodFunc(api.Bool))
 	methodPool.Store("eq", setMethodFunc(api.Eq))
-	methodPool.Store("valid_condition", setMethodFunc(api.ValidCondition))
+	methodPool.Store("gt", setMethodFunc(api.Gt))
+	methodPool.Store("gte", setMethodFunc(api.Gte))
+	methodPool.Store("lt", setMethodFunc(api.Lt))
+	methodPool.Store("lte", setMethodFunc(api.Lte))
 }
 
 // 实例化验证

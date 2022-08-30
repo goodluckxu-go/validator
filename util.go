@@ -12,6 +12,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"test/validator/condition"
+	"test/validator/param"
 )
 
 // 读取body内容
@@ -373,6 +375,33 @@ func isEqualData(dataOne, dataTwo interface{}) bool {
 	return false
 }
 
+// 比较两个数值
+func isCompareData(dataOne, dataTwo interface{}) (int, error) {
+	var dataOneFloat64, dataTwoFloat64 float64
+	var err error
+	switch dataOne.(type) {
+	case int, float64:
+		dataOneFloat64 = interfaceToFloat64(dataOne)
+		dataTwoFloat64 = interfaceToFloat64(dataTwo)
+	case string:
+		if dataOneFloat64, err = strconv.ParseFloat(fmt.Sprintf("%v", dataOne), 64); err != nil {
+			return 0, errors.New("比较的数必须是数字或字符串的数字")
+		}
+		if dataTwoFloat64, err = strconv.ParseFloat(fmt.Sprintf("%v", dataTwo), 64); err != nil {
+			return 0, errors.New("比较的数必须是数字或字符串的数字")
+		}
+	default:
+		return 0, errors.New("比较的数必须是数字或字符串的数字")
+	}
+	if dataOneFloat64 > dataTwoFloat64 {
+		return 1, nil
+	}
+	if dataOneFloat64 < dataTwoFloat64 {
+		return -1, nil
+	}
+	return 0, nil
+}
+
 // 获取float64类型数据
 func interfaceToFloat64(i interface{}) float64 {
 	if i == nil {
@@ -435,10 +464,13 @@ func inArray(val interface{}, array interface{}) (exists bool) {
 //  minNum,maxNum 最小和最大参数数量
 //  ins 需要在这个列表中
 func validArgs(args []interface{}, minNum, maxNum int, ins ...interface{}) error {
+	if minNum < 0 {
+		return fmt.Errorf("minNum必须大于等于0")
+	}
 	if minNum == maxNum && len(args) != minNum {
 		return fmt.Errorf("验证规则错误: 参数数量必须是%d", minNum)
 	}
-	if len(args) < minNum || len(args) > maxNum {
+	if len(args) < minNum || (maxNum != -1 && len(args) > maxNum) {
 		return fmt.Errorf("验证规则错误: 参数数量必须在%d-%d之间", minNum, maxNum)
 	}
 	for index, arg := range args {
@@ -453,4 +485,156 @@ func validArgs(args []interface{}, minNum, maxNum int, ins ...interface{}) error
 		}
 	}
 	return nil
+}
+
+// 公式比较
+func FormulaCompare(d *Data, args ...interface{}) (bool, error) {
+	var formulaList [][]interface{}
+	var formulaArgs []interface{}
+	var formulaSymbolList []string
+	for _, arg := range args {
+		switch arg.(type) {
+		case *condition.Formula:
+			bl, err := FormulaCompare(d, arg.(*condition.Formula).Args...)
+			if err != nil {
+				return false, err
+			}
+			formulaArgs = append(formulaArgs, bl)
+		case string:
+			switch arg.(string) {
+			case "&&", "||":
+				formulaSymbolList = append(formulaSymbolList, arg.(string))
+				formulaList = append(formulaList, formulaArgs)
+				formulaArgs = []interface{}{}
+			default:
+				formulaArgs = append(formulaArgs, arg)
+			}
+		default:
+			formulaArgs = append(formulaArgs, arg)
+		}
+	}
+	if len(formulaArgs) > 0 {
+		formulaList = append(formulaList, formulaArgs)
+	}
+	var index int
+	isBool := false
+	var loopNumber int
+	for {
+		for index, formulaArgs = range formulaList {
+			if len(formulaArgs) == 1 {
+				if rs, ok := formulaArgs[0].(bool); ok {
+					isBool = rs
+					continue
+				}
+				return false, fmt.Errorf("公式错误: %v", formulaArgs)
+			}
+			var leftData interface{}
+			var rightDataList []interface{}
+			var symbol string
+			if len(formulaArgs) == 2 {
+				symbol, _ = formulaArgs[0].(string)
+				leftData = d.GetValidData()
+				rightDataList = append(rightDataList, formulaArgs[1])
+			} else if len(formulaArgs) == 3 {
+				symbol, _ = formulaArgs[1].(string)
+				leftData = formulaArgs[0]
+				if file, ok := formulaArgs[2].(param.File); ok {
+					for _, data := range d.GetLevelData(string(file)) {
+						rightDataList = append(rightDataList, data.data)
+					}
+				} else {
+					rightDataList = append(rightDataList, formulaArgs[2])
+				}
+			} else {
+				return false, fmt.Errorf("公式错误: %v", formulaArgs)
+			}
+			if loopNumber == 0 {
+				loopNumber = len(rightDataList)
+			}
+			formulaSymbol := ""
+			if len(formulaSymbolList) > index-1 && index > 0 {
+				formulaSymbol = formulaSymbolList[index-1]
+			}
+			var err error
+			var compareData int
+			var compareBool bool
+			for _, rightData := range rightDataList {
+				switch symbol {
+				case ">":
+					compareData, err = isCompareData(leftData, rightData)
+					if err != nil {
+						return false, err
+					}
+					if compareData == 1 {
+						compareBool = true
+					}
+				case ">=":
+					compareData, err = isCompareData(leftData, rightData)
+					if err != nil {
+						return false, err
+					}
+					if compareData != -1 {
+						compareBool = true
+					}
+				case "<":
+					compareData, err = isCompareData(leftData, rightData)
+					if err != nil {
+						return false, err
+					}
+					if compareData == -1 {
+						compareBool = true
+					}
+				case "<=":
+					compareData, err = isCompareData(leftData, rightData)
+					if err != nil {
+						return false, err
+					}
+					if compareData != 1 {
+						compareBool = true
+					}
+				case "=":
+					compareData, err = isCompareData(leftData, rightData)
+					if err != nil {
+						return false, err
+					}
+					if compareData == 0 {
+						compareBool = true
+					}
+				case "!=":
+					compareData, err = isCompareData(leftData, rightData)
+					if err != nil {
+						return false, err
+					}
+					if compareData != 0 {
+						compareBool = true
+					}
+				case "in":
+				case "not":
+				default:
+					return false, fmt.Errorf("公式错误: %v", formulaArgs)
+				}
+				rightDataList = rightDataList[1:]
+				break
+			}
+			switch formulaSymbol {
+			case "&&":
+				if !isBool {
+					continue
+				}
+				isBool = compareBool
+			case "||":
+				if isBool {
+					continue
+				}
+				isBool = compareBool
+			default:
+				isBool = compareBool
+			}
+		}
+		loopNumber--
+		if loopNumber <= 0 {
+			break
+		}
+	}
+	return isBool, nil
 }

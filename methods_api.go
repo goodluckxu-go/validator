@@ -18,6 +18,10 @@ type methodsApi interface {
 	Integer(d *Data, args ...interface{}) error
 	Bool(d *Data, args ...interface{}) error
 	Eq(d *Data, args ...interface{}) error
+	Gt(d *Data, args ...interface{}) error
+	Gte(d *Data, args ...interface{}) error
+	Lt(d *Data, args ...interface{}) error
+	Lte(d *Data, args ...interface{}) error
 }
 
 func newMethodsApi(api methodsApi) methodsApi {
