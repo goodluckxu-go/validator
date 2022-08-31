@@ -145,10 +145,12 @@ validator.SetLangAddr("./zh_cn.json")
 [required](#required) |
 [nullable](#nullable) |
 [in](#in) |
+[not_in](#not_in) |
 [unique](#unique) |
 [email](#email) |
 [phone](#phone) |
-[regexp](#regexp)
+[regexp](#regexp) |
+[not_regexp](#not_regexp)
 ### 类型验证
 [array](#array) |
 [map](#map) |
@@ -210,7 +212,13 @@ validator.Method.SetMethod("nullable")
 #### <a id="in">in规则</a>
 验证是否在数组里面，参数是slice或array类型
 ~~~go
-validator.Method.SetMethod("email", []int{1,2,3})
+validator.Method.SetMethod("in", []int{1,2,3})
+~~~
+
+#### <a id="not_in">not_in规则</a>
+验证是否不在数组里面，参数是slice或array类型
+~~~go
+validator.Method.SetMethod("not_in", []int{1,2,3})
 ~~~
 
 #### <a id="unique">unique规则</a>
@@ -232,9 +240,15 @@ validator.Method.SetMethod("phone")
 ~~~
 
 #### <a id="regexp">regexp规则</a>
-验证正则表达式
+验证数据在正则表达式中
 ~~~go
 validator.Method.SetMethod("regexp", `^\d*$`)
+~~~
+
+#### <a id="not_regexp">not_regexp规则</a>
+验证数据不在正则表达式中
+~~~go
+validator.Method.SetMethod("not_regexp", `^\d*$`)
 ~~~
 
 #### <a id="array">array规则</a>
@@ -286,25 +300,25 @@ validator.Method.SetMethod("eq",5)
 ~~~
 
 #### <a id="gt">gt规则</a>
-验证是否大于某个数。可验证数字，字符串的数字或日期，参数可以是param.File("test")字段值
+验证是否大于某个数。可验证数字，字符串的数字或日期，参数可以是param.File("test"),time.Time字段值
 ~~~go
 validator.Method.SetMethod("gt",5)
 ~~~
 
 #### <a id="gte">gte规则</a>
-验证是否大于等于某个数。可验证数字和字符串的数字或日期，参数可以是param.File("test")字段值
+验证是否大于等于某个数。可验证数字和字符串的数字或日期，参数可以是param.File("test"),time.Time字段值
 ~~~go
 validator.Method.SetMethod("gte",5)
 ~~~
 
 #### <a id="lt">lt规则</a>
-验证是否小于某个数。可验证数字和字符串的数字或日期，参数可以是param.File("test")字段值
+验证是否小于某个数。可验证数字和字符串的数字或日期，参数可以是param.File("test"),time.Time字段值
 ~~~go
 validator.Method.SetMethod("lt",5)
 ~~~
 
 #### <a id="lte">lte规则</a>
-验证是否小于等于某个数。可验证数字和字符串的数字或日期，参数可以是param.File("test")字段值
+验证是否小于等于某个数。可验证数字和字符串的数字或日期，参数可以是param.File("test"),time.Time字段值
 ~~~go
 validator.Method.SetMethod("lte",5)
 ~~~

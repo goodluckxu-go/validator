@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/goodluckxu-go/validator/condition"
 	"github.com/goodluckxu-go/validator/param"
+	"github.com/gookit/color"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -290,6 +291,10 @@ func getMessageError(langStr string, message string, args ...interface{}) error 
 		langStr = strings.Replace(langStr, "${notes}", fmt.Sprintf("%v", args[0]), -1)
 	}
 	if len(args) > 1 {
+		switch args[1].(type) {
+		case time.Time:
+			args[1] = args[1].(time.Time).Format("2006-01-02 15:04:05")
+		}
 		langStr = strings.Replace(langStr, "${compare}", fmt.Sprintf("%v", args[1]), -1)
 		langStr = strings.Replace(langStr, "${len}", fmt.Sprintf("%v", args[1]), -1)
 		langStr = strings.Replace(langStr, "${array}", fmt.Sprintf("%v", args[1]), -1)
@@ -353,6 +358,16 @@ func getData(data interface{}, key, parentKey string) []dataOne {
 func isEqualData(dataOne, dataTwo interface{}) bool {
 	switch dataOne.(type) {
 	case string:
+		if dataTwoDate, ok := dataTwo.(time.Time); ok {
+			dataOneDate, err := timeParse(fmt.Sprintf("%v", dataOne))
+			if err != nil {
+				return false
+			}
+			color.Error.Println(dataOneDate, dataTwoDate)
+			if dataOneDate.Unix() == dataTwoDate.Unix() {
+				return true
+			}
+		}
 		if dataOne.(string) == fmt.Sprintf("%v", dataTwo) {
 			return true
 		}
@@ -405,9 +420,12 @@ func isCompareData(dataOne, dataTwo interface{}) (int, error) {
 			if err != nil {
 				return 0, errInfo
 			}
-			dataTwoDate, err = timeParse(fmt.Sprintf("%v", dataTwo))
-			if err != nil {
-				return 0, errInfo
+			var ok bool
+			if dataTwoDate, ok = dataTwo.(time.Time); !ok {
+				dataTwoDate, err = timeParse(fmt.Sprintf("%v", dataTwo))
+				if err != nil {
+					return 0, errInfo
+				}
 			}
 			dataOneFloat64 = float64(dataOneDate.Unix())
 			dataTwoFloat64 = float64(dataTwoDate.Unix())

@@ -67,10 +67,13 @@ func (v *valid) ValidXml(args ...interface{}) (va *valid) {
 	va = new(valid)
 	var rs []Rule
 	var data interface{}
+	var messages []Message
 	for _, arg := range args {
 		switch arg.(type) {
 		case []Rule:
 			rs = arg.([]Rule)
+		case []Message:
+			messages = arg.([]Message)
 		case *map[string]interface{}, *[]interface{}, *interface{}:
 			data = arg
 		}
@@ -89,9 +92,8 @@ func (v *valid) ValidXml(args ...interface{}) (va *valid) {
 	}
 	dataValue := reflect.ValueOf(data).Elem()
 	newData := dataValue.Interface()
-	for _, row := range v.ruleRowList {
-		v.splitRuleAsData(row, newData, "")
-	}
+	v.handleRules(newData)
+	v.handleMessageOrNotes(rs, messages, newData)
 	if errs := v.validRule(&newData); errs != nil {
 		va.errors = errs
 		return
@@ -99,6 +101,24 @@ func (v *valid) ValidXml(args ...interface{}) (va *valid) {
 	dataValue.Set(reflect.ValueOf(newData))
 	return nil
 }
+
+//func (v *valid) ValidFile(args ...interface{}) (va *valid) {
+//	va = new(valid)
+//	var rs []Rule
+//	var data interface{}
+//	var messages []Message
+//	for _, arg := range args {
+//		switch arg.(type) {
+//		case []Rule:
+//			rs = arg.([]Rule)
+//		case []Message:
+//			messages = arg.([]Message)
+//		case *map[string]interface{}, *[]interface{}, *interface{}:
+//			data = arg
+//		}
+//	}
+//	v.req.FormFile("arg")
+//}
 
 // Errors 获取字符串错误信息列表
 func (v *valid) Errors() (es []string) {
