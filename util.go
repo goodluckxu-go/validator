@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/goodluckxu-go/validator/condition"
+	"github.com/goodluckxu-go/validator/param"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -13,8 +15,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"test/validator/condition"
-	"test/validator/param"
 	"time"
 )
 

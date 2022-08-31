@@ -1,7 +1,6 @@
 package validator
 
 import (
-	"github.com/gookit/color"
 	"strconv"
 )
 
@@ -127,7 +126,6 @@ func (m *methods) Date(d *Data, args ...interface{}) error {
 	}
 	formatString, _ := args[0].(string)
 	if err := validDate(dateString, formatString); err != nil {
-		color.Error.Println(err)
 		return rsErr
 	}
 	return nil

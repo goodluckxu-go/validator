@@ -1,7 +1,7 @@
 package validator
 
 import (
-	"test/validator/param"
+	"github.com/goodluckxu-go/validator/param"
 )
 
 func (m *methods) Eq(d *Data, args ...interface{}) error {
@@ -121,7 +121,7 @@ func (m *methods) Lt(d *Data, args ...interface{}) error {
 		if err != nil {
 			return err
 		}
-		if compareData == -1 {
+		if compareData != -1 {
 			return getMessageError(lang.Lt, d.message, validNotes, val)
 		}
 	}
@@ -141,7 +141,7 @@ func (m *methods) Lte(d *Data, args ...interface{}) error {
 			if err != nil {
 				return err
 			}
-			if compareData == -1 {
+			if compareData == 1 {
 				compare := d.notesMap[vMap.fullPk]
 				if compare == "" {
 					compare = vMap.fullPk
