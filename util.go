@@ -484,7 +484,7 @@ func inArray(val interface{}, array interface{}) (exists bool) {
 // 字符串转时间
 func timeParse(date string) (time.Time, error) {
 	formatAtByte := []byte("0000-00-00 00:00:00")
-	copy(formatAtByte, []byte(date))
+	copy(formatAtByte, date)
 	return time.ParseInLocation("2006-01-02 15:04:05", string(formatAtByte), time.Local)
 }
 
@@ -502,22 +502,22 @@ func validDate(date string, format string) (err error) {
 	if len(date) != len(format) {
 		return
 	}
-	if err := validSingleDate("YYYY", &date, &format); err != nil {
+	if err = validSingleDate("YYYY", &date, &format); err != nil {
 		return err
 	}
-	if err := validSingleDate("mm", &date, &format); err != nil {
+	if err = validSingleDate("mm", &date, &format); err != nil {
 		return err
 	}
-	if err := validSingleDate("dd", &date, &format); err != nil {
+	if err = validSingleDate("dd", &date, &format); err != nil {
 		return err
 	}
-	if err := validSingleDate("HH", &date, &format); err != nil {
+	if err = validSingleDate("HH", &date, &format); err != nil {
 		return err
 	}
-	if err := validSingleDate("ii", &date, &format); err != nil {
+	if err = validSingleDate("ii", &date, &format); err != nil {
 		return err
 	}
-	if err := validSingleDate("ss", &date, &format); err != nil {
+	if err = validSingleDate("ss", &date, &format); err != nil {
 		return err
 	}
 	if date != format {

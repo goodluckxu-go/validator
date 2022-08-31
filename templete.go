@@ -5,8 +5,6 @@ var (
 	lang   language // 语言
 )
 
-type fieldType uint8
-
 // 规则方法
 type method struct {
 	methods []methodData
@@ -22,7 +20,7 @@ func (m *method) List(me ...*method) []*method {
 	return me
 }
 
-// 设置自定义验证方法(其他参数可用于获取外部数据或者传地址修改外部数据)
+// SetFun 设置自定义验证方法(其他参数可用于获取外部数据或者传地址修改外部数据)
 func (m *method) SetFun(fn func(d *Data, args ...interface{}) error, args ...interface{}) (ms *method) {
 	ms = getInstance(m).(*method)
 	ms.methods = append(ms.methods, methodData{
@@ -32,7 +30,7 @@ func (m *method) SetFun(fn func(d *Data, args ...interface{}) error, args ...int
 	return
 }
 
-// 设置默认验证方法
+// SetMethod 设置默认验证方法
 func (m *method) SetMethod(r string, args ...interface{}) (ms *method) {
 	ms = getInstance(m).(*method)
 	ms.methods = append(ms.methods, methodData{
@@ -46,7 +44,7 @@ type value struct {
 	value interface{}
 }
 
-// 设置规则类型
+// SetValue 设置规则类型
 func (m *method) SetValue(v interface{}) value {
 	return value{value: v}
 }
@@ -69,14 +67,14 @@ type ruleAsData struct {
 	notes   string
 }
 
-// 单个规则
+// Rule 单个规则
 type Rule struct {
 	Field   string
 	Methods []*method
 	Notes   string
 }
 
-// 消息
+// Message 消息
 type Message [2]string
 
 // 单条数据

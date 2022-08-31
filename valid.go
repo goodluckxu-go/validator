@@ -22,7 +22,7 @@ type valid struct {
 	errors         []error // 错误列表
 }
 
-// 验证json数据
+// ValidJson 验证json数据
 func (v *valid) ValidJson(args ...interface{}) (va *valid) {
 	va = new(valid)
 	var rs []Rule
@@ -62,7 +62,7 @@ func (v *valid) ValidJson(args ...interface{}) (va *valid) {
 	return nil
 }
 
-// 验证xml数据
+// ValidXml 验证xml数据
 func (v *valid) ValidXml(args ...interface{}) (va *valid) {
 	va = new(valid)
 	var rs []Rule
@@ -100,7 +100,7 @@ func (v *valid) ValidXml(args ...interface{}) (va *valid) {
 	return nil
 }
 
-// 获取字符串错误信息列表
+// Errors 获取字符串错误信息列表
 func (v *valid) Errors() (es []string) {
 	for _, err := range v.errors {
 		es = append(es, err.Error())
