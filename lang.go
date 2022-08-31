@@ -2,21 +2,26 @@ package validator
 
 type language struct {
 	Required string // 必填
-	Array    string
-	Map      string
-	String   string
-	Number   string
-	Integer  string
-	Bool     string
-	Date     string
-	Eq       string
-	Gt       string
-	Gte      string
-	Lt       string
-	Lte      string
-	Len      string
-	Min      string
-	Max      string
+	Array    string // 数组
+	In       string // 数组中
+	Email    string // 邮箱
+	Phone    string // 手机
+	Unique   string // 重复
+	Regexp   string // 正则
+	Map      string // 对象
+	String   string // 字符串
+	Number   string // 数字
+	Integer  string // 整数
+	Bool     string // 布尔
+	Date     string // 日期
+	Eq       string // 等于
+	Gt       string // 大于
+	Gte      string // 大于等于
+	Lt       string // 小于
+	Lte      string // 小于等于
+	Len      string // 长度等于
+	Min      string // 长度最低
+	Max      string // 长度最高
 }
 
 func init() {
@@ -24,6 +29,11 @@ func init() {
 		Required: "${notes}为必填",
 		Array:    "${notes}必须是数组",
 		Map:      "${notes}必须是对象",
+		In:       "${notes}必须在数组${array}中",
+		Email:    "${notes}必须是邮箱",
+		Phone:    "${notes}必须是手机号",
+		Unique:   "${notes}重复",
+		Regexp:   "${notes}验证错误",
 		String:   "${notes}必须是字符串",
 		Number:   "${notes}必须是数字",
 		Integer:  "${notes}必须是整数",

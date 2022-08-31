@@ -278,6 +278,7 @@ func (v *valid) validRule(data *interface{}) (es []error) {
 				data:          data,
 				notes:         row.notes,
 				fullField:     row.fullPk,
+				pk:            row.pk,
 				validData:     &row.data,
 				ruleAsDataMap: v.ruleAsDataMap,
 				messageMap:    v.messageMap,
@@ -323,7 +324,7 @@ func (v *valid) validRule(data *interface{}) (es []error) {
 			if err != nil {
 				es = append(es, err)
 			}
-			if !isErrors {
+			if !isErrors && len(es) > 0 {
 				return
 			}
 		}

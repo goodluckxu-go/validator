@@ -2,6 +2,10 @@ package validator
 
 import (
 	"errors"
+	"fmt"
+	"reflect"
+	"regexp"
+	"strings"
 )
 
 type methods struct {
@@ -95,4 +99,103 @@ func (m *methods) Nullable(d *Data, args ...interface{}) error {
 		return nil
 	}
 	return errors.New("")
+}
+
+func (m *methods) In(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 1, 1); err != nil {
+		return err
+	}
+	arrValue := reflect.ValueOf(args[0])
+	if arrValue.Kind() != reflect.Slice && arrValue.Kind() != reflect.Array {
+		return fmt.Errorf("验证规则错误: 参数类型必须是数组或切片")
+	}
+	validData := d.GetValidData()
+	arrLen := arrValue.Len()
+	for i := 0; i < arrLen; i++ {
+		child := arrValue.Index(i).Interface()
+		switch child.(type) {
+		case string:
+			if fmt.Sprintf("%v", validData) == child.(string) {
+				return nil
+			}
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64:
+			if interfaceToFloat64(validData) == interfaceToFloat64(child) {
+				return nil
+			}
+		}
+	}
+	return getMessageError(lang.In, d.message, d.GetNotes(), fmt.Sprintf("%v", args[0]))
+}
+
+func (m *methods) Email(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 0, 0); err != nil {
+		return err
+	}
+	reg := regexp.MustCompile(`^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$`)
+	if reg.MatchString(fmt.Sprintf("%v", d.GetValidData())) {
+		return nil
+	}
+	return getMessageError(lang.Email, d.message, d.GetNotes())
+}
+
+func (m *methods) Phone(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 0, 0); err != nil {
+		return err
+	}
+	reg := regexp.MustCompile(`^1[0-9]{10}$`)
+	if reg.MatchString(fmt.Sprintf("%v", d.GetValidData())) {
+		return nil
+	}
+	return getMessageError(lang.Phone, d.message, d.GetNotes())
+}
+
+func (m *methods) Unique(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 0, 0); err != nil {
+		return err
+	}
+	pkList := strings.Split(d.pk, ".")
+	lastStarIndex := 0
+	for k, v := range pkList {
+		if v == "*" {
+			lastStarIndex = k
+		}
+	}
+	fullList := strings.Split(d.fullField, ".")
+	newList := append(fullList[0:lastStarIndex], pkList[lastStarIndex:]...)
+	var data interface{}
+	for k, v := range d.ruleAsDataMap {
+		kList := strings.Split(k, ".")
+		isEq := true
+		for i, n := range newList {
+			if len(kList) <= i {
+				isEq = false
+				break
+			}
+			if n == "*" || kList[i] == n {
+				continue
+			}
+			isEq = false
+		}
+		if isEq {
+			if data == nil {
+				data = v.data
+			} else {
+				if data == v.data {
+					return getMessageError(lang.Unique, d.message, d.GetNotes())
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (m *methods) Regexp(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 1, 1); err != nil {
+		return err
+	}
+	reg := regexp.MustCompile(fmt.Sprintf("%v", args[0]))
+	if reg.MatchString(fmt.Sprintf("%v", d.GetValidData())) {
+		return nil
+	}
+	return getMessageError(lang.Regexp, d.message, d.GetNotes())
 }

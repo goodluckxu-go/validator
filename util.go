@@ -292,6 +292,7 @@ func getMessageError(langStr string, message string, args ...interface{}) error 
 	if len(args) > 1 {
 		langStr = strings.Replace(langStr, "${compare}", fmt.Sprintf("%v", args[1]), -1)
 		langStr = strings.Replace(langStr, "${len}", fmt.Sprintf("%v", args[1]), -1)
+		langStr = strings.Replace(langStr, "${array}", fmt.Sprintf("%v", args[1]), -1)
 	}
 	if message != "" {
 		langStr = message
@@ -378,23 +379,41 @@ func isEqualData(dataOne, dataTwo interface{}) bool {
 	return false
 }
 
-// 比较两个数值
+// 比较两个数值，数字或字符串的数字或日期
 func isCompareData(dataOne, dataTwo interface{}) (int, error) {
 	var dataOneFloat64, dataTwoFloat64 float64
 	var err error
+	errInfo := errors.New("比较的数必须是数字,字符串的数字或日期且类型匹配")
 	switch dataOne.(type) {
 	case int, float64:
 		dataOneFloat64 = interfaceToFloat64(dataOne)
 		dataTwoFloat64 = interfaceToFloat64(dataTwo)
 	case string:
-		if dataOneFloat64, err = strconv.ParseFloat(fmt.Sprintf("%v", dataOne), 64); err != nil {
-			return 0, errors.New("比较的数必须是数字或字符串的数字")
+		isNumber := true
+		dataOneFloat64, err = strconv.ParseFloat(fmt.Sprintf("%v", dataOne), 64)
+		if err != nil {
+			isNumber = false
 		}
-		if dataTwoFloat64, err = strconv.ParseFloat(fmt.Sprintf("%v", dataTwo), 64); err != nil {
-			return 0, errors.New("比较的数必须是数字或字符串的数字")
+		if isNumber {
+			dataTwoFloat64, err = strconv.ParseFloat(fmt.Sprintf("%v", dataTwo), 64)
+			if err != nil {
+				return 0, errInfo
+			}
+		} else {
+			var dataOneDate, dataTwoDate time.Time
+			dataOneDate, err = timeParse(fmt.Sprintf("%v", dataOne))
+			if err != nil {
+				return 0, errInfo
+			}
+			dataTwoDate, err = timeParse(fmt.Sprintf("%v", dataTwo))
+			if err != nil {
+				return 0, errInfo
+			}
+			dataOneFloat64 = float64(dataOneDate.Unix())
+			dataTwoFloat64 = float64(dataTwoDate.Unix())
 		}
 	default:
-		return 0, errors.New("比较的数必须是数字或字符串的数字")
+		return 0, errInfo
 	}
 	if dataOneFloat64 > dataTwoFloat64 {
 		return 1, nil

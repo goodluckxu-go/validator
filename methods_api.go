@@ -13,6 +13,11 @@ type methodsApi interface {
 	ValidCondition(d *Data, args ...interface{}) error
 	Required(d *Data, args ...interface{}) error
 	Nullable(d *Data, args ...interface{}) error
+	In(d *Data, args ...interface{}) error
+	Unique(d *Data, args ...interface{}) error
+	Email(d *Data, args ...interface{}) error
+	Phone(d *Data, args ...interface{}) error
+	Regexp(d *Data, args ...interface{}) error
 	// 类型验证
 	Array(d *Data, args ...interface{}) error
 	Map(d *Data, args ...interface{}) error

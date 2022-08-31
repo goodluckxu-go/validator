@@ -144,15 +144,10 @@ validator.SetLangAddr("./zh_cn.json")
 [valid_condition](#valid_condition) |
 [required](#required) |
 [nullable](#nullable) |
-[len](#len) |
-[min](#min) |
-[max](#max) |
-[date](#date) |
-[date_format](#date_format) |
-[email](#email) |
-[phone](#phone) |
 [in](#in) |
 [unique](#unique) |
+[email](#email) |
+[phone](#phone) |
 [regexp](#regexp)
 ### 类型验证
 [array](#array) |
@@ -160,17 +155,18 @@ validator.SetLangAddr("./zh_cn.json")
 [string](#string) |
 [number](#number) |
 [integer](#integer) |
-[bool](#bool)
+[bool](#bool) |
+[date](#date)
 ### 比较验证
 [eq](#eq) |
 [gt](#gt) |
 [gte](#gte) |
 [lt](#lt) |
-[lte](#lte) |
-[date_gt](#date_gt) |
-[date_gte](#date_gte) |
-[date_lt](#date_lt) |
-[date_lte](#date_lte)
+[lte](#lte)
+### 长度验证
+[len](#len) |
+[min](#min) |
+[max](#max)
 
 ## 规则注释(rule notes)
 
@@ -211,6 +207,36 @@ validator.Method.SetMethod("required", "string")
 validator.Method.SetMethod("nullable")
 ~~~
 
+#### <a id="in">in规则</a>
+验证是否在数组里面，参数是slice或array类型
+~~~go
+validator.Method.SetMethod("email", []int{1,2,3})
+~~~
+
+#### <a id="unique">unique规则</a>
+验证数组内的值唯一
+~~~go
+validator.Method.SetMethod("unique")
+~~~
+
+#### <a id="email">email规则</a>
+验证是否是邮箱
+~~~go
+validator.Method.SetMethod("email")
+~~~
+
+#### <a id="phone">phone规则</a>
+验证是否是手机号
+~~~go
+validator.Method.SetMethod("phone")
+~~~
+
+#### <a id="regexp">regexp规则</a>
+验证正则表达式
+~~~go
+validator.Method.SetMethod("regexp", `^\d*$`)
+~~~
+
 #### <a id="array">array规则</a>
 验证是否是数组
 ~~~go
@@ -227,24 +253,6 @@ validator.Method.SetMethod("map")
 验证是否是字符串
 ~~~go
 validator.Method.SetMethod("string")
-~~~
-
-#### <a id="len">len规则</a>
-验证是长度等于某个数。可获取字符串和数组长度
-~~~
-len:5
-~~~
-
-#### <a id="min">min规则</a>
-验证是长度大于等于某个数。可获取字符串和数组长度
-~~~
-min:5
-~~~
-
-#### <a id="max">max规则</a>
-验证是长度小于等于某个数。可获取字符串和数组长度
-~~~
-max:5
 ~~~
 
 #### <a id="number">number规则</a>
@@ -265,64 +273,10 @@ validator.Method.SetMethod("integer")
 validator.Method.SetMethod("bool")
 ~~~
 
-#### <a id="gt">gt规则</a>
-验证是否大于某个数。可验证数字和字符串的数字，参数可以是param.File("test")字段值
-~~~go
-validator.Method.SetMethod("gt",5)
-~~~
-
-#### <a id="gte">gte规则</a>
-验证是否大于等于某个数。可验证数字和字符串的数字，参数可以是param.File("test")字段值
-~~~go
-validator.Method.SetMethod("gte",5)
-~~~
-
-#### <a id="lt">lt规则</a>
-验证是否小于某个数。可验证数字和字符串的数字，参数可以是param.File("test")字段值
-~~~go
-validator.Method.SetMethod("lt",5)
-~~~
-
-#### <a id="lte">lte规则</a>
-验证是否小于等于某个数。可验证数字和字符串的数字，参数可以是param.File("test")字段值
-~~~go
-validator.Method.SetMethod("lte",5)
-~~~
-
 #### <a id="date">date规则</a>
-验证是否是日期格式 Y-m-d H:i:s类型
-~~~
-date
-~~~
-
-#### <a id="date_format">date_format规则</a>
-自定义验证是否是日期格式 Y-m-d H:i:s类型，自定义类型 Y年，m月，d日，H时，i分，s秒
-~~~
-date_format:Y-m-d H:i:s
-~~~
-
-#### <a id="date_gt">date_gt规则</a>
-验证日期是否大于某个值
-~~~
-date_gt:2002-02-05
-~~~
-
-#### <a id="date_gte">date_gte规则</a>
-验证日期是否大于等于某个值
-~~~
-date_gte:2002-02-05
-~~~
-
-#### <a id="date_lt">date_lt规则</a>
-验证日期是否小于某个值
-~~~
-date_lt:2002-02-05
-~~~
-
-#### <a id="date_lte">date_lte规则</a>
-验证日期是否小于等于某个值
-~~~
-date_lte:2002-02-05
+验证是否是日期格式 args参数Y-m-d H:i:s类型，Y年，m月，d日，H时，i分，s秒
+~~~go
+validator.Method.SetMethod("date")
 ~~~
 
 #### <a id="eq">eq规则</a>
@@ -331,80 +285,44 @@ date_lte:2002-02-05
 validator.Method.SetMethod("eq",5)
 ~~~
 
-#### <a id="email">email规则</a>
-验证是否是邮箱
-~~~
-email
-~~~
-
-#### <a id="phone">phone规则</a>
-验证是否是手机号
-~~~
-phone
+#### <a id="gt">gt规则</a>
+验证是否大于某个数。可验证数字，字符串的数字或日期，参数可以是param.File("test")字段值
+~~~go
+validator.Method.SetMethod("gt",5)
 ~~~
 
-#### <a id="in">in规则</a>
-验证是否在数组里面
-~~~
-in:1,2,3
-~~~
-
-#### <a id="unique">unique规则</a>
-验证数组内的值唯一
-~~~
-unique
+#### <a id="gte">gte规则</a>
+验证是否大于等于某个数。可验证数字和字符串的数字或日期，参数可以是param.File("test")字段值
+~~~go
+validator.Method.SetMethod("gte",5)
 ~~~
 
-#### <a id="regexp">regexp规则</a>
-验证正则表达式
-~~~
-regexp:^\d$
-~~~
-
-#### <a id="gt_field">gt_field规则</a>
-验证是否大于某个字段。可验证数字和字符串的数字
-~~~
-gt_field:field
+#### <a id="lt">lt规则</a>
+验证是否小于某个数。可验证数字和字符串的数字或日期，参数可以是param.File("test")字段值
+~~~go
+validator.Method.SetMethod("lt",5)
 ~~~
 
-#### <a id="gte_field">gte_field规则</a>
-验证是否大于等于某个字段。可验证数字和字符串的数字
-~~~
-gte_field:field
-~~~
-
-#### <a id="lt_field">lt_field规则</a>
-验证是否小于某个字段。可验证数字和字符串的数字
-~~~
-lt_field:field
+#### <a id="lte">lte规则</a>
+验证是否小于等于某个数。可验证数字和字符串的数字或日期，参数可以是param.File("test")字段值
+~~~go
+validator.Method.SetMethod("lte",5)
 ~~~
 
-#### <a id="lte_field">lte_field规则</a>
-验证是否小于等于某个字段。可验证数字和字符串的数字
-~~~
-lte_field:field
-~~~
-
-#### <a id="date_gt_field">date_gt_field规则</a>
-验证日期是否大于某个字段
-~~~
-date_gt_field:field
+#### <a id="len">len规则</a>
+验证是长度等于某个数。可获取字符串和数组长度
+~~~go
+validator.Method.SetMethod("len", 5)
 ~~~
 
-#### <a id="date_gte_field">date_gte_field规则</a>
-验证日期是否大于等于某个字段
-~~~
-date_gte_field:field
-~~~
-
-#### <a id="date_lt_field">date_lt_field规则</a>
-验证日期是否小于某个字段
-~~~
-date_lt_field:field
+#### <a id="min">min规则</a>
+验证是长度大于等于某个数。可获取字符串和数组长度
+~~~go
+validator.Method.SetMethod("min", 5)
 ~~~
 
-#### <a id="date_lte_field">date_lte_field规则</a>
-验证日期是否小于等于某个字段
-~~~
-date_lte_field:field
+#### <a id="max">max规则</a>
+验证是长度小于等于某个数。可获取字符串和数组长度
+~~~go
+validator.Method.SetMethod("max", 5)
 ~~~

@@ -5,6 +5,7 @@ type Data struct {
 	data          *interface{}
 	notes         string
 	fullField     string
+	pk            string
 	message       string
 	validData     *interface{}
 	notesMap      map[string]string      // 规则注释(notes)
