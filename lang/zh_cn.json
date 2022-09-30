@@ -1,3 +1,25 @@
 {
-  "Required": "${notes}为必填项"
+  "Required":  "${notes}为必填",
+  "Array":     "${notes}必须是数组",
+  "Map":       "${notes}必须是对象",
+  "In":        "${notes}必须在数组${array}中",
+  "NotIn":     "${notes}必须不在数组${array}中",
+  "Email":     "${notes}必须是邮箱",
+  "Phone":     "${notes}必须是手机号",
+  "Unique":    "${notes}重复",
+  "Regexp":    "${notes}验证错误",
+  "NotRegexp": "${notes}验证错误",
+  "String":    "${notes}必须是字符串",
+  "Number":    "${notes}必须是数字",
+  "Integer":   "${notes}必须是整数",
+  "Bool":      "${notes}必须是布尔",
+  "Date":      "${notes}必须是日期格式",
+  "Eq":        "${notes}必须等于${compare}",
+  "Gt":        "${notes}必须大于${compare}",
+  "Gte":       "${notes}必须大于等于${compare}",
+  "Lt":        "${notes}必须小于${compare}",
+  "Lte":       "${notes}必须小于等于${compare}",
+  "Len":       "${notes}长度必须是${len}",
+  "Min":       "${notes}最小长度为${len}",
+  "Max":       "${notes}最大长度为${len}"
 }
