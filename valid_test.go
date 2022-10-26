@@ -148,6 +148,8 @@ func TestValid_ValidJson(t *testing.T) {
 			Method.SetMethod("nullable"),
 			Method.SetMethod("string"),
 		)},
+	}, []Message{
+		{"goods.*.type.required", "商品的类型必须传入"},
 	})
 	if errs != nil {
 		t.Errorf(errs.Error())

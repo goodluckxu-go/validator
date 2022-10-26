@@ -313,7 +313,7 @@ func (v *valid) validRule(data *interface{}) (es []error) {
 					isErrors = true
 					continue
 				}
-				//d.message = getMessagesVal(v.messages, row.fullPk, me)
+				d.message = v.messageMap[row.fullPk+"."+me]
 				var fnInterface interface{}
 				var ok bool
 				if fnInterface, ok = methodPool.Load(me); !ok {
