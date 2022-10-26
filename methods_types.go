@@ -103,7 +103,7 @@ func (m *methods) Bool(d *Data, args ...interface{}) error {
 	if validData == nil {
 		return nil
 	}
-	if _, ok := validData.(string); ok {
+	if _, ok := validData.(bool); ok {
 		return nil
 	}
 	return rsErr
