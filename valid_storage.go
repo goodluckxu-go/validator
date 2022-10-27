@@ -12,8 +12,9 @@ func (v *valid) SetRequest(req *http.Request) (va *valid) {
 }
 
 // SetData 设置数据
-func (v *valid) SetData(data interface{}) *valid {
-	v.storage.data = data
+func (v *valid) SetData(data interface{}) (va *valid) {
+	va = v.getInstance()
+	va.storage.data = data
 	return v
 }
 
