@@ -1,5 +1,7 @@
 package validator
 
+import "net/http"
+
 var (
 	Method method   // 规则方法
 	lang   language // 语言
@@ -40,13 +42,30 @@ func (m *method) SetMethod(r string, args ...interface{}) (ms *method) {
 	return
 }
 
-type value struct {
-	value interface{}
+// 存储
+type storage struct {
+	req      *http.Request // 请求
+	data     interface{}   // 数据
+	rules    []Rule        // 规则
+	messages []Message     // 消息(覆盖规则使用)
 }
 
-// SetValue 设置规则类型
-func (m *method) SetValue(v interface{}) value {
-	return value{value: v}
+// 处理数据
+type handle struct {
+	fileMap    map[string]*file
+	ruleIndex  []string
+	ruleData   map[string]*ruleAsData
+	messages   [][3]string
+	notesMap   map[string]string
+	messageMap map[string]string
+}
+
+// 文件
+type file struct {
+	Suffix string // 后缀
+	Mime   string // 协议
+	Name   string // 文件名称
+	Size   int64  // 文件大小
 }
 
 // 处理数据
@@ -61,7 +80,6 @@ type ruleRow struct {
 // 拆分数据组装
 type ruleAsData struct {
 	pk      string
-	fullPk  string
 	data    interface{}
 	methods []methodData
 	notes   string

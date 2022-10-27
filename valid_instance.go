@@ -1,9 +1,5 @@
 package validator
 
-import (
-	"net/http"
-)
-
 func init() {
 	api := newMethodsApi(new(methods))
 	methodPool.Store("valid_condition", setMethodFunc(api.ValidCondition))
@@ -34,9 +30,11 @@ func init() {
 }
 
 // New 实例化验证
-func New(req *http.Request) *valid {
+func New() *valid {
 	v := new(valid)
-	v.req = req
+	v.storage = new(storage)
+	v.handle = new(handle)
+	v.handle.fileMap = map[string]*file{}
 	return v
 }
 

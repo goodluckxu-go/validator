@@ -28,22 +28,26 @@ validator.RegisterMethod("test", func(d *validator.Data, args ...interface{}) er
 // data只能有map[string]interface{},[]interface{},interface{}三种类型
 var data interface{}
 var dataIn int
-err := validator.New(c.Request).ValidJson(&data, []validator.Rule{
-	{Field:""}, //空字符串代表验证最外层(全部)
-    {Field: "list.*.b.*.a", Methods: validator.Method.List(
-	    validator.Method.SetMethod("required"), // 常规验证
-	    validator.Method.SetMethod("test"), // 添加的全局验证
-		// args表示外部传入的任意参数
-        validator.Method.SetFun(func(d *validator.Data, args ...interface{}) error {
-            a, _ := args[0].(*int)
-            *a = 10
-            return nil
-        }, &dataIn), // 自定义验证
-    ), Notes: "测试"},
-}, []validator.Message{ // 只会生效最后一条
-    {"list.*.b.*.a.required", "必填"}, // 其中*代表list1列表的所有的b数组中所有的a的required规则错误注释被替换
-    {"list.*.b.0.a.required", "必填1"},// 其中*代表list1列表的所有的b数组中第0位的a的required规则错误注释被替换
-})
+valid := validator.New().
+	SetData(&data).
+	SetRules([]validator.Rule{
+		{Field:""}, //空字符串代表验证最外层(全部) 
+		{Field: "list.*.b.*.a", Methods: validator.Method.List(
+			validator.Method.SetMethod("required"), // 常规验证 
+			// validator.Method.SetMethod("test"), // 添加的全局验证 
+			//args表示外部传入的任意参数 
+			validator.Method.SetFun(func(d *validator.Data, args ...interface{}) error {
+				a, _ := args[0].(*int)
+				*a = 10
+				return nil
+			}, &dataIn), // 自定义验证 
+		), Notes: "测试"},
+	}).
+	SetMessages([]validator.Message{ // 只会生效最后一条 
+		{"list.*.b.*.a.required", "必填"}, // 其中*代表list1列表的所有的b数组中所有的a的required规则错误注释被替换 
+		{"list.*.b.0.a.required", "必填1"},// 其中*代表list1列表的所有的b数组中第0位的a的required规则错误注释被替换 
+	}).
+	Valid()
 ~~~
 
 ## 验证数据*Data说明
