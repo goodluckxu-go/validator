@@ -83,6 +83,7 @@ type ruleAsData struct {
 	data    interface{}
 	methods []methodData
 	notes   string
+	isValid bool // 数据已经验证
 }
 
 // Rule 单个规则

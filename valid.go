@@ -16,7 +16,6 @@ type valid struct {
 	storage *storage // 存储仓库
 	handle  *handle  // 处理数据
 	Error   error
-	Errors  []error
 }
 
 // Valid 验证数据
@@ -26,7 +25,6 @@ func (v *valid) Valid() (va *valid) {
 	if va.storage.req != nil {
 		err = va.parseRequest()
 		if err != nil {
-			va.Errors = []error{err}
 			va.Error = err
 			return
 		}
@@ -34,7 +32,6 @@ func (v *valid) Valid() (va *valid) {
 	if va.storage.rules != nil {
 		var ruleRowList []ruleRow
 		if ruleRowList, err = va.parseRules(va.storage.rules); err != nil {
-			va.Errors = []error{err}
 			va.Error = err
 			return
 		}
@@ -43,8 +40,7 @@ func (v *valid) Valid() (va *valid) {
 		va.handleRules(newData, ruleRowList)
 		va.handleMessageOrNotes(va.storage.rules, va.storage.messages, newData)
 		if errs := va.validRule(&newData); errs != nil {
-			va.Errors = errs
-			va.Error = errs[0]
+			va.Error = errs
 			return
 		}
 		dataValue.Set(reflect.ValueOf(newData))
@@ -252,12 +248,21 @@ func (v *valid) splitMessages(message [3]string, data interface{}, fullPk string
 }
 
 // 验证规则
-func (v *valid) validRule(data *interface{}) (es []error) {
+func (v *valid) validRule(data *interface{}) (errs error) {
 	for _, fullPk := range v.handle.ruleIndex {
 		row := v.handle.ruleData[fullPk]
+		fullPkList := strings.Split(fullPk, ".")
+		if len(fullPkList) > 1 {
+			parentFullKey := strings.Join(fullPkList[0:len(fullPkList)-1], ".")
+			parentRow := v.handle.ruleData[parentFullKey]
+			if parentRow != nil && !parentRow.isValid {
+				continue
+			}
+		}
 		// 验证数据
-		isErrors := false // 是否返回多个错误信息
+		validNum := 0
 		for _, m := range row.methods {
+			validNum++
 			if row.notes == "" {
 				row.notes = fullPk
 			}
@@ -276,26 +281,22 @@ func (v *valid) validRule(data *interface{}) (es []error) {
 			switch m.method.(type) {
 			case string:
 				me = m.method.(string)
-				if me == "errors" {
-					isErrors = true
-					continue
-				}
 				d.message = v.handle.messageMap[fullPk+"."+me]
 				var fnInterface interface{}
 				var ok bool
 				if fnInterface, ok = methodPool.Load(me); !ok {
-					es = append(es, fmt.Errorf("规则 %s 不存在", me))
+					errs = fmt.Errorf("规则 %s 不存在", me)
 					return
 				}
 				if fn, ok = fnInterface.(methodFunc); !ok {
-					es = append(es, errors.New("规则没有注入"))
+					errs = errors.New("规则没有注入")
 					return
 				}
 
 			case methodFunc:
 				fn = m.method.(methodFunc)
 			default:
-				es = append(es, errors.New("未知错误"))
+				errs = errors.New("未知错误")
 				return
 			}
 			err := fn(d, m.args...)
@@ -309,14 +310,12 @@ func (v *valid) validRule(data *interface{}) (es []error) {
 				}
 			}
 			if err != nil {
-				es = append(es, err)
-			}
-			if !isErrors && len(es) > 0 {
+				errs = err
 				return
 			}
 		}
-		if isErrors && len(es) > 0 {
-			return
+		if len(row.methods) == validNum {
+			v.handle.ruleData[fullPk].isValid = true
 		}
 	}
 	return nil
