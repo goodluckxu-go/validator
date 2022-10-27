@@ -25,11 +25,11 @@ validator.RegisterMethod("test", func(d *validator.Data, args ...interface{}) er
 ~~~
 调用方法
 ~~~go
-// data只能有map[string]interface{},[]interface{},interface{}三种类型
+// data只能有map[string]interface{},[]interface{},interface{}三种类型时字符串类型的数字可转化
 var data interface{}
 var dataIn int
 valid := validator.New().
-	SetRequest(req). // *http.Request
+	SetRequest(req). // *http.Request，不设置则验证传入data数据的值
 	SetData(&data).
 	SetRules([]validator.Rule{
 		{Field:""}, //空字符串代表验证最外层(全部) 
@@ -43,7 +43,7 @@ valid := validator.New().
 				return nil
 			}, &dataIn), // 自定义验证 
 		), Notes: "测试"},
-	}).
+	}). // 不传规则则是赋值
 	SetMessages([]validator.Message{ // 只会生效最后一条 
 		{"list.*.b.*.a.required", "必填"}, // 其中*代表list1列表的所有的b数组中所有的a的required规则错误注释被替换 
 		{"list.*.b.0.a.required", "必填1"},// 其中*代表list1列表的所有的b数组中第0位的a的required规则错误注释被替换 
