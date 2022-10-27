@@ -1,9 +1,6 @@
 # go版本的validator通用验证器
 
 ## 用法(usage)
-只传数据data时可以只用于赋值
-
-只传规则rule时可以只用于验证
 
 <span style="color:red;">注意：</span>
 
