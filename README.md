@@ -1,5 +1,4 @@
 # go版本的validator通用验证器
-目前支持解析ValidJson,ValidXml
 
 ## 用法(usage)
 只传数据data时可以只用于赋值
