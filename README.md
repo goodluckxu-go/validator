@@ -34,7 +34,7 @@ valid := validator.New().
 		{Field:""}, //空字符串代表验证最外层(全部) 
 		{Field: "list.*.b.*.a", Methods: validator.Method.List(
 			validator.Method.SetMethod("required"), // 常规验证 
-			// validator.Method.SetMethod("test"), // 添加的全局验证 
+			validator.Method.SetMethod("test"), // 添加的全局验证 
 			//args表示外部传入的任意参数 
 			validator.Method.SetFun(func(d *validator.Data, args ...interface{}) error {
 				a, _ := args[0].(*int)
