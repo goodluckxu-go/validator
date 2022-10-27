@@ -29,6 +29,7 @@ validator.RegisterMethod("test", func(d *validator.Data, args ...interface{}) er
 var data interface{}
 var dataIn int
 valid := validator.New().
+	SetRequest(req). // *http.Request
 	SetData(&data).
 	SetRules([]validator.Rule{
 		{Field:""}, //空字符串代表验证最外层(全部) 
