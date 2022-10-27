@@ -132,11 +132,8 @@ valid := validator.New().
 #### GetNotes() string
 获取注释
 
-## 返回(callback)
-*valid
-### 方法
-Error() string   单条错误信息
-Errors() []string  多条错误信息
+## 返回错误信息(callback)
+valid.Error
 
 ## 语言包(language)
 ~~~go
