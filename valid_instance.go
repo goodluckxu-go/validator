@@ -30,8 +30,8 @@ func init() {
 }
 
 // New 实例化验证
-func New() *valid {
-	v := new(valid)
+func New() *Valid {
+	v := new(Valid)
 	v.storage = new(storage)
 	v.handle = new(handle)
 	v.handle.fileMap = map[string]*file{}

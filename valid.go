@@ -12,14 +12,14 @@ import (
 	"strings"
 )
 
-type valid struct {
+type Valid struct {
 	storage *storage // 存储仓库
 	handle  *handle  // 处理数据
 	Error   error
 }
 
 // Valid 验证数据
-func (v *valid) Valid() (va *valid) {
+func (v *Valid) Valid() (va *Valid) {
 	va = v.getInstance()
 	var err error
 	if va.storage.req != nil {
@@ -66,15 +66,15 @@ func (v *valid) Valid() (va *valid) {
 }
 
 // 重新实例化
-func (v *valid) getInstance() (va *valid) {
-	va = new(valid)
+func (v *Valid) getInstance() (va *Valid) {
+	va = new(Valid)
 	va.storage = v.storage
 	va.handle = v.handle
 	return
 }
 
 // parseRequest 解析请求数据
-func (v *valid) parseRequest() error {
+func (v *Valid) parseRequest() error {
 	if v.storage.req == nil {
 		return nil
 	}
@@ -141,7 +141,7 @@ func (v *valid) parseRequest() error {
 }
 
 // 解析规则
-func (v *valid) parseRules(rules []Rule) ([]ruleRow, error) {
+func (v *Valid) parseRules(rules []Rule) ([]ruleRow, error) {
 	if rules == nil {
 		return nil, nil
 	}
@@ -153,14 +153,14 @@ func (v *valid) parseRules(rules []Rule) ([]ruleRow, error) {
 }
 
 // 处理规则
-func (v *valid) handleRules(data interface{}, ruleRowList []ruleRow) {
+func (v *Valid) handleRules(data interface{}, ruleRowList []ruleRow) {
 	for _, row := range ruleRowList {
 		v.splitRuleAsData(row, data, "")
 	}
 }
 
 // 处理消息和注释
-func (v *valid) handleMessageOrNotes(rules []Rule, messages []Message, data interface{}) {
+func (v *Valid) handleMessageOrNotes(rules []Rule, messages []Message, data interface{}) {
 	for _, r := range rules {
 		v.splitMessages([3]string{r.Field, r.Notes, "node"}, data, "", 0)
 	}
@@ -186,7 +186,7 @@ func (v *valid) handleMessageOrNotes(rules []Rule, messages []Message, data inte
 }
 
 // 拆分规则和数据成一个数据对应一个规则
-func (v *valid) splitRuleAsData(row ruleRow, data interface{}, fullPk string) {
+func (v *Valid) splitRuleAsData(row ruleRow, data interface{}, fullPk string) {
 	pk := strings.TrimPrefix(row.pk, "root")
 	pk = strings.TrimPrefix(pk, ".")
 	if v.handle.ruleData == nil {
@@ -225,7 +225,7 @@ func (v *valid) splitRuleAsData(row ruleRow, data interface{}, fullPk string) {
 }
 
 // 拆分规则和消息成一个数据对应一个规则
-func (v *valid) splitMessages(message [3]string, data interface{}, fullPk string, ln int) {
+func (v *Valid) splitMessages(message [3]string, data interface{}, fullPk string, ln int) {
 	msgKeyList := strings.Split(message[0], ".")
 	fullPkList := strings.Split(fullPk, ".")
 	if ln > 0 && len(fullPkList) == ln {
@@ -265,7 +265,7 @@ func (v *valid) splitMessages(message [3]string, data interface{}, fullPk string
 }
 
 // 验证规则
-func (v *valid) validRule(data *interface{}) (errs error) {
+func (v *Valid) validRule(data *interface{}) (errs error) {
 	for _, fullPk := range v.handle.ruleIndex {
 		row := v.handle.ruleData[fullPk]
 		fullPkList := strings.Split(fullPk, ".")
