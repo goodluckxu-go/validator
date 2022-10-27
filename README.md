@@ -275,13 +275,13 @@ validator.Method.SetMethod("string")
 ~~~
 
 #### <a id="number">number规则</a>
-验证是否是数字。可验证数字和字符串的数字
+验证是否是数字。可验证数字和字符串的数字，如果接受数据为map[string]interface{},[]interface{},interface{}验证后会转换成float64
 ~~~go
 validator.Method.SetMethod("number")
 ~~~
 
 #### <a id="integer">integer规则</a>
-验证是否是整数。可验证数字和字符串的数字
+验证是否是整数。可验证数字和字符串的数字，如果接受数据为map[string]interface{},[]interface{},interface{}验证后会转换成int64
 ~~~go
 validator.Method.SetMethod("integer")
 ~~~

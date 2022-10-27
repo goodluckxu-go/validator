@@ -400,7 +400,7 @@ func isCompareData(dataOne, dataTwo interface{}) (int, error) {
 	var err error
 	errInfo := errors.New("比较的数必须是数字,字符串的数字或日期且类型匹配")
 	switch dataOne.(type) {
-	case int, float64:
+	case int64, float64:
 		dataOneFloat64 = interfaceToFloat64(dataOne)
 		dataTwoFloat64 = interfaceToFloat64(dataTwo)
 	case string:

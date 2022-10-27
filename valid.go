@@ -37,13 +37,30 @@ func (v *valid) Valid() (va *valid) {
 		}
 		dataValue := reflect.ValueOf(va.storage.data).Elem()
 		newData := dataValue.Interface()
+		isSet := false
+		switch newData.(type) {
+		case map[string]interface{}, []interface{}:
+			isSet = true
+		default:
+			by, byErr := json.Marshal(newData)
+			if byErr != nil {
+				va.Error = byErr
+				return
+			}
+			if err = json.Unmarshal(by, &newData); err != nil {
+				va.Error = err
+				return
+			}
+		}
 		va.handleRules(newData, ruleRowList)
 		va.handleMessageOrNotes(va.storage.rules, va.storage.messages, newData)
 		if errs := va.validRule(&newData); errs != nil {
 			va.Error = errs
 			return
 		}
-		dataValue.Set(reflect.ValueOf(newData))
+		if isSet {
+			dataValue.Set(reflect.ValueOf(newData))
+		}
 	}
 	return
 }
