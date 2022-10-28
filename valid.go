@@ -13,8 +13,8 @@ import (
 )
 
 type Valid struct {
-	storage *storage // 存储仓库
-	handle  *handle  // 处理数据
+	storage storage // 存储仓库
+	handle  handle  // 处理数据
 	Error   error
 }
 

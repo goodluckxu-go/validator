@@ -15,7 +15,7 @@ func (v *Valid) SetRequest(req *http.Request) (va *Valid) {
 func (v *Valid) SetData(data interface{}) (va *Valid) {
 	va = v.getInstance()
 	va.storage.data = data
-	return v
+	return
 }
 
 // SetRules 设置规则

@@ -32,8 +32,6 @@ func init() {
 // New 实例化验证
 func New() *Valid {
 	v := new(Valid)
-	v.storage = new(storage)
-	v.handle = new(handle)
 	v.handle.fileMap = map[string]*file{}
 	return v
 }
