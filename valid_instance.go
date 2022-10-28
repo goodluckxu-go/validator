@@ -19,6 +19,7 @@ func init() {
 	methodPool.Store("integer", setMethodFunc(api.Integer))
 	methodPool.Store("bool", setMethodFunc(api.Bool))
 	methodPool.Store("date", setMethodFunc(api.Date))
+	methodPool.Store("file", setMethodFunc(api.File))
 	methodPool.Store("eq", setMethodFunc(api.Eq))
 	methodPool.Store("gt", setMethodFunc(api.Gt))
 	methodPool.Store("gte", setMethodFunc(api.Gte))
@@ -27,6 +28,8 @@ func init() {
 	methodPool.Store("len", setMethodFunc(api.Len))
 	methodPool.Store("min", setMethodFunc(api.Min))
 	methodPool.Store("max", setMethodFunc(api.Max))
+	methodPool.Store("suffix", setMethodFunc(api.Suffix))
+	methodPool.Store("mime", setMethodFunc(api.Mime))
 }
 
 // New 实例化验证

@@ -131,3 +131,14 @@ func (m *methods) Date(d *Data, args ...interface{}) error {
 	}
 	return nil
 }
+
+func (m *methods) File(d *Data, args ...interface{}) error {
+	if err := validArgs(args, 0, 1); err != nil {
+		return err
+	}
+	rsErr := getMessageError(lang.File, d.message, d.GetNotes())
+	if d.handle.fileMap[d.fullField] == nil {
+		return rsErr
+	}
+	return nil
+}

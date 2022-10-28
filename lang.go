@@ -16,6 +16,7 @@ type language struct {
 	Integer   string // 整数
 	Bool      string // 布尔
 	Date      string // 日期
+	File      string // 文件
 	Eq        string // 等于
 	Gt        string // 大于
 	Gte       string // 大于等于
@@ -24,6 +25,8 @@ type language struct {
 	Len       string // 长度等于
 	Min       string // 长度最低
 	Max       string // 长度最高
+	Suffix    string // 文件后缀验证
+	Mime      string // 文件类型验证
 }
 
 func init() {
@@ -43,6 +46,7 @@ func init() {
 		Integer:   "${notes}必须是整数",
 		Bool:      "${notes}必须是布尔",
 		Date:      "${notes}必须是日期格式",
+		File:      "${notes}必须是文件",
 		Eq:        "${notes}必须等于${compare}",
 		Gt:        "${notes}必须大于${compare}",
 		Gte:       "${notes}必须大于等于${compare}",
@@ -51,5 +55,7 @@ func init() {
 		Len:       "${notes}长度必须是${len}",
 		Min:       "${notes}最小长度为${len}",
 		Max:       "${notes}最大长度为${len}",
+		Suffix:    "${notes}后缀必须在数组${array}中",
+		Mime:      "${notes}类型必须在数组${array}中",
 	}
 }

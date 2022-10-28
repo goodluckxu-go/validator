@@ -157,6 +157,7 @@ validator.SetLangAddr("./zh_cn.json")
 [integer](#integer) |
 [bool](#bool) |
 [date](#date)
+[file](#file)
 ### 比较验证
 [eq](#eq) |
 [gt](#gt) |
@@ -167,6 +168,9 @@ validator.SetLangAddr("./zh_cn.json")
 [len](#len) |
 [min](#min) |
 [max](#max)
+### 文件验证
+[suffix](#suffix) |
+[mime](#mime)
 
 ## 规则注释(rule notes)
 
@@ -183,7 +187,7 @@ validator.SetLangAddr("./zh_cn.json")
 
 <span style="color:red;">5. 公式为 3,>,1则表示判断3和1的大小</span>
 
-<span style="color:red;">6. 公式为 param.File("test.a.b"),=,5表示，字段test.a.b的值和5是否相等</span>
+<span style="color:red;">6. 公式为 param.Field("test.a.b"),=,5表示，字段test.a.b的值和5是否相等</span>
 
 <span style="color:red;">7. 公式可以直接为true或false</span>
 
@@ -191,7 +195,7 @@ validator.SetLangAddr("./zh_cn.json")
 
 <span style="color:red;">9. args公式为true则验证，否在跳过验证</span>
 ~~~go
-validator.Method.SetMethod("valid_condition", "=", 1, "&&", "<", 10, "&&", param.File("list.*.a.a"), "=", 12, "&&", condition.Brackets(">", 2)),
+validator.Method.SetMethod("valid_condition", "=", 1, "&&", "<", 10, "&&", param.Field("list.*.a.a"), "=", 12, "&&", condition.Brackets(">", 2)),
 ~~~
 
 #### <a id="required">required规则</a>
@@ -291,32 +295,38 @@ validator.Method.SetMethod("bool")
 validator.Method.SetMethod("date")
 ~~~
 
+#### <a id="file">file规则</a>
+验证是否是文件
+~~~go
+validator.Method.SetMethod("file")
+~~~
+
 #### <a id="eq">eq规则</a>
-验证两个字段是否相同，参数可以是param.File("test")字段值
+验证两个字段是否相同，参数可以是param.Field("test")字段值
 ~~~go
 validator.Method.SetMethod("eq",5)
 ~~~
 
 #### <a id="gt">gt规则</a>
-验证是否大于某个数。可验证数字，字符串的数字或日期，参数可以是param.File("test"),time.Time字段值
+验证是否大于某个数。可验证数字，字符串的数字或日期，参数可以是param.Field("test"),time.Time字段值
 ~~~go
 validator.Method.SetMethod("gt",5)
 ~~~
 
 #### <a id="gte">gte规则</a>
-验证是否大于等于某个数。可验证数字和字符串的数字或日期，参数可以是param.File("test"),time.Time字段值
+验证是否大于等于某个数。可验证数字和字符串的数字或日期，参数可以是param.Field("test"),time.Time字段值
 ~~~go
 validator.Method.SetMethod("gte",5)
 ~~~
 
 #### <a id="lt">lt规则</a>
-验证是否小于某个数。可验证数字和字符串的数字或日期，参数可以是param.File("test"),time.Time字段值
+验证是否小于某个数。可验证数字和字符串的数字或日期，参数可以是param.Field("test"),time.Time字段值
 ~~~go
 validator.Method.SetMethod("lt",5)
 ~~~
 
 #### <a id="lte">lte规则</a>
-验证是否小于等于某个数。可验证数字和字符串的数字或日期，参数可以是param.File("test"),time.Time字段值
+验证是否小于等于某个数。可验证数字和字符串的数字或日期，参数可以是param.Field("test"),time.Time字段值
 ~~~go
 validator.Method.SetMethod("lte",5)
 ~~~
@@ -337,4 +347,16 @@ validator.Method.SetMethod("min", 5)
 验证是长度小于等于某个数。可获取字符串和数组长度
 ~~~go
 validator.Method.SetMethod("max", 5)
+~~~
+
+#### <a id="suffix">suffix规则</a>
+验证文件后缀类型，可为多个
+~~~go
+validator.Method.SetMethod("suffix", "jpg","png")
+~~~
+
+#### <a id="mime">mime规则</a>
+验证文件协议类型，可为多个
+~~~go
+validator.Method.SetMethod("mime", "image/jpeg","image/png")
 ~~~

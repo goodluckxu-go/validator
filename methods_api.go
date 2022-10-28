@@ -28,6 +28,7 @@ type methodsApi interface {
 	Integer(d *Data, args ...interface{}) error
 	Bool(d *Data, args ...interface{}) error
 	Date(d *Data, args ...interface{}) error
+	File(d *Data, args ...interface{}) error
 	// 比较验证
 	Eq(d *Data, args ...interface{}) error
 	Gt(d *Data, args ...interface{}) error
@@ -38,6 +39,9 @@ type methodsApi interface {
 	Len(d *Data, args ...interface{}) error
 	Min(d *Data, args ...interface{}) error
 	Max(d *Data, args ...interface{}) error
+	// 文件验证
+	Suffix(d *Data, args ...interface{}) error
+	Mime(d *Data, args ...interface{}) error
 }
 
 func newMethodsApi(api methodsApi) methodsApi {

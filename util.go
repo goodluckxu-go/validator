@@ -605,6 +605,9 @@ func validArgs(args []interface{}, minNum, maxNum int, ins ...interface{}) error
 		return fmt.Errorf("验证规则错误: 参数数量必须是%d", minNum)
 	}
 	if len(args) < minNum || (maxNum != -1 && len(args) > maxNum) {
+		if maxNum == -1 {
+			return fmt.Errorf("验证规则错误: 参数数量必须大于%d", minNum)
+		}
 		return fmt.Errorf("验证规则错误: 参数数量必须在%d-%d之间", minNum, maxNum)
 	}
 	for index, arg := range args {
