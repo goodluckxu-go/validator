@@ -20,6 +20,10 @@ func (m *methods) Required(d *Data, args ...interface{}) error {
 		fType, _ = args[0].(string)
 	}
 	rsErr := getMessageError(lang.Required, d.message, d.GetNotes())
+	// 先验证是否为文件
+	if d.handle.fileMap[d.fullField] != nil {
+		return nil
+	}
 	validData := d.GetValidData()
 	if validData == nil {
 		return rsErr
@@ -189,7 +193,7 @@ func (m *methods) Unique(d *Data, args ...interface{}) error {
 	fullList := strings.Split(d.fullField, ".")
 	newList := append(fullList[0:lastStarIndex], pkList[lastStarIndex:]...)
 	var data interface{}
-	for k, v := range d.ruleAsDataMap {
+	for k, v := range d.handle.ruleData {
 		kList := strings.Split(k, ".")
 		isEq := true
 		for i, n := range newList {

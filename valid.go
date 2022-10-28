@@ -120,15 +120,13 @@ func (v *Valid) parseRequest() error {
 				data[name] = oneList[3]
 			} else {
 				// 文件数据
-				_, fh, err := v.storage.req.FormFile(name)
-				if err != nil {
-					return err
-				}
-				v.handle.fileMap[name] = &file{
-					Suffix: strings.TrimPrefix(filepath.Ext(fh.Filename), "."),
-					Mime:   fh.Header.Get("Content-Type"),
-					Name:   fh.Filename,
-					Size:   fh.Size,
+				if _, fh, err := v.storage.req.FormFile(name); err == nil {
+					v.handle.fileMap[name] = &file{
+						Suffix: strings.TrimPrefix(filepath.Ext(fh.Filename), "."),
+						Mime:   fh.Header.Get("Content-Type"),
+						Name:   fh.Filename,
+						Size:   fh.Size,
+					}
 				}
 			}
 		}
@@ -166,12 +164,6 @@ func (v *Valid) handleMessageOrNotes(rules []Rule, messages []Message, data inte
 	}
 	for _, msg := range messages {
 		v.splitMessages([3]string{msg[0], msg[1], "message"}, data, "", 0)
-	}
-	if v.handle.messageMap == nil {
-		v.handle.messageMap = map[string]string{}
-	}
-	if v.handle.notesMap == nil {
-		v.handle.notesMap = map[string]string{}
 	}
 	for _, r := range v.handle.messages {
 		if r[2] == "message" {
@@ -284,14 +276,12 @@ func (v *Valid) validRule(data *interface{}) (errs error) {
 				row.notes = fullPk
 			}
 			d := &Data{
-				data:          data,
-				notes:         row.notes,
-				fullField:     fullPk,
-				pk:            row.pk,
-				validData:     &row.data,
-				ruleAsDataMap: v.handle.ruleData,
-				messageMap:    v.handle.messageMap,
-				notesMap:      v.handle.notesMap,
+				data:      data,
+				notes:     row.notes,
+				fullField: fullPk,
+				pk:        row.pk,
+				validData: &row.data,
+				handle:    v.handle,
 			}
 			var fn methodFunc
 			var me string

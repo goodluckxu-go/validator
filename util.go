@@ -671,9 +671,9 @@ func formulaCompare(d *Data, args ...interface{}) (bool, error) {
 			symbol, _ = formulaArgs[1].(string)
 			leftData = formulaArgs[0]
 			rightData = formulaArgs[2]
-			if file, ok := formulaArgs[0].(param.File); ok {
+			if field, ok := formulaArgs[0].(param.Field); ok {
 				rightData = true
-				for _, data := range d.GetLevelData(string(file)) {
+				for _, data := range d.GetLevelData(string(field)) {
 					bl, err := formulaCompare(d, data.data, symbol, formulaArgs[2])
 					if err != nil {
 						return false, err

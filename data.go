@@ -2,15 +2,13 @@ package validator
 
 // Data 数据
 type Data struct {
-	data          *interface{}
-	notes         string
-	fullField     string
-	pk            string
-	message       string
-	validData     *interface{}
-	notesMap      map[string]string      // 规则注释(notes)
-	messageMap    map[string]string      // 规则注释(messages)
-	ruleAsDataMap map[string]*ruleAsData // 数据
+	data      *interface{}
+	notes     string
+	fullField string
+	pk        string
+	message   string
+	validData *interface{}
+	handle    handle
 }
 
 // GetAllData 获取所有数据
@@ -26,7 +24,7 @@ func (d *Data) GetData(key string) []dataOne {
 // GetCommonData 获取数组层级最近的一次相同数据(同一数组中)
 func (d *Data) GetCommonData(key string) interface{} {
 	commonField, _ := getCommonFullField(d.fullField, key)
-	ruleData := d.ruleAsDataMap[commonField]
+	ruleData := d.handle.ruleData[commonField]
 	if ruleData == nil {
 		return nil
 	}
@@ -36,7 +34,7 @@ func (d *Data) GetCommonData(key string) interface{} {
 // GetLevelData 获取层级数据，遇到*合并数组
 func (d *Data) GetLevelData(key string) []dataOne {
 	commonField, otherField := getCommonFullField(d.fullField, key)
-	ruleData := d.ruleAsDataMap[commonField]
+	ruleData := d.handle.ruleData[commonField]
 	if ruleData == nil {
 		return nil
 	}
@@ -58,7 +56,7 @@ func (d *Data) GetNotes() string {
 func (d *Data) setValidData(value interface{}) {
 	*d.validData = value
 	newData := *d.data
-	ruleData := d.ruleAsDataMap[d.fullField]
+	ruleData := d.handle.ruleData[d.fullField]
 	ruleData.data = value
 	if d.fullField == "" {
 		*d.data = value

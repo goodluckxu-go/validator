@@ -11,10 +11,10 @@ func (m *methods) Eq(d *Data, args ...interface{}) error {
 	val := args[0]
 	validData := d.GetValidData()
 	validNotes := d.GetNotes()
-	if file, ok := val.(param.File); ok {
-		for _, vMap := range d.GetLevelData(string(file)) {
+	if field, ok := val.(param.Field); ok {
+		for _, vMap := range d.GetLevelData(string(field)) {
 			if !isEqualData(validData, vMap.data) {
-				compare := d.notesMap[vMap.fullPk]
+				compare := d.handle.notesMap[vMap.fullPk]
 				if compare == "" {
 					compare = vMap.fullPk
 				}
@@ -36,14 +36,14 @@ func (m *methods) Gt(d *Data, args ...interface{}) error {
 	val := args[0]
 	validData := d.GetValidData()
 	validNotes := d.GetNotes()
-	if file, ok := val.(param.File); ok {
-		for _, vMap := range d.GetLevelData(string(file)) {
+	if field, ok := val.(param.Field); ok {
+		for _, vMap := range d.GetLevelData(string(field)) {
 			compareData, err := isCompareData(validData, vMap.data)
 			if err != nil {
 				return err
 			}
 			if compareData != 1 {
-				compare := d.notesMap[vMap.fullPk]
+				compare := d.handle.notesMap[vMap.fullPk]
 				if compare == "" {
 					compare = vMap.fullPk
 				}
@@ -69,14 +69,14 @@ func (m *methods) Gte(d *Data, args ...interface{}) error {
 	val := args[0]
 	validData := d.GetValidData()
 	validNotes := d.GetNotes()
-	if file, ok := val.(param.File); ok {
-		for _, vMap := range d.GetLevelData(string(file)) {
+	if field, ok := val.(param.Field); ok {
+		for _, vMap := range d.GetLevelData(string(field)) {
 			compareData, err := isCompareData(validData, vMap.data)
 			if err != nil {
 				return err
 			}
 			if compareData == -1 {
-				compare := d.notesMap[vMap.fullPk]
+				compare := d.handle.notesMap[vMap.fullPk]
 				if compare == "" {
 					compare = vMap.fullPk
 				}
@@ -102,14 +102,14 @@ func (m *methods) Lt(d *Data, args ...interface{}) error {
 	val := args[0]
 	validData := d.GetValidData()
 	validNotes := d.GetNotes()
-	if file, ok := val.(param.File); ok {
-		for _, vMap := range d.GetLevelData(string(file)) {
+	if field, ok := val.(param.Field); ok {
+		for _, vMap := range d.GetLevelData(string(field)) {
 			compareData, err := isCompareData(validData, vMap.data)
 			if err != nil {
 				return err
 			}
 			if compareData != -1 {
-				compare := d.notesMap[vMap.fullPk]
+				compare := d.handle.notesMap[vMap.fullPk]
 				if compare == "" {
 					compare = vMap.fullPk
 				}
@@ -135,14 +135,14 @@ func (m *methods) Lte(d *Data, args ...interface{}) error {
 	val := args[0]
 	validData := d.GetValidData()
 	validNotes := d.GetNotes()
-	if file, ok := val.(param.File); ok {
-		for _, vMap := range d.GetLevelData(string(file)) {
+	if field, ok := val.(param.Field); ok {
+		for _, vMap := range d.GetLevelData(string(field)) {
 			compareData, err := isCompareData(validData, vMap.data)
 			if err != nil {
 				return err
 			}
 			if compareData == 1 {
-				compare := d.notesMap[vMap.fullPk]
+				compare := d.handle.notesMap[vMap.fullPk]
 				if compare == "" {
 					compare = vMap.fullPk
 				}

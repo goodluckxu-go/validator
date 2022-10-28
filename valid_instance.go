@@ -33,6 +33,9 @@ func init() {
 func New() *Valid {
 	v := new(Valid)
 	v.handle.fileMap = map[string]*file{}
+	v.handle.ruleData = map[string]*ruleAsData{}
+	v.handle.notesMap = map[string]string{}
+	v.handle.messageMap = map[string]string{}
 	return v
 }
 
