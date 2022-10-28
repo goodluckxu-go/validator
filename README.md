@@ -158,13 +158,13 @@ validator.SetLangAddr("./zh_cn.json")
 [bool](#bool) |
 [date](#date) |
 [file](#file)
-### 比较验证
+### 比较验证 (字段,时间,数字)
 [eq](#eq) |
 [gt](#gt) |
 [gte](#gte) |
 [lt](#lt) |
 [lte](#lte)
-### 长度验证
+### 长度验证 (字符串,数组,文件大小)
 [len](#len) |
 [min](#min) |
 [max](#max)
