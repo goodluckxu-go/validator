@@ -105,7 +105,7 @@ func TestValid_ValidJson(t *testing.T) {
 			{Field: "user.re_pwd", Methods: Method.List(
 				Method.SetMethod("required"),
 				Method.SetMethod("string"),
-				Method.SetMethod("eq", param.File("user.pwd")),
+				Method.SetMethod("eq", param.Field("user.pwd")),
 			), Notes: "密码"},
 			{Field: "user.is_vip", Methods: Method.List(
 				Method.SetMethod("required"),
@@ -130,7 +130,7 @@ func TestValid_ValidJson(t *testing.T) {
 				Method.SetMethod("max", 255),
 			)},
 			{Field: "goods.*.number", Methods: Method.List(
-				Method.SetMethod("valid_condition", param.File("goods.*.is_number"), "=", true),
+				Method.SetMethod("valid_condition", param.Field("goods.*.is_number"), "=", true),
 				Method.SetMethod("required"),
 				Method.SetMethod("integer"),
 				Method.SetMethod("gte", 1),
