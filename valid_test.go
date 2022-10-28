@@ -106,7 +106,7 @@ func TestValid_ValidJson(t *testing.T) {
 				Method.SetMethod("required"),
 				Method.SetMethod("string"),
 				Method.SetMethod("eq", param.Field("user.pwd")),
-			), Notes: "密码"},
+			), Notes: "确认密码"},
 			{Field: "user.is_vip", Methods: Method.List(
 				Method.SetMethod("required"),
 				Method.SetMethod("bool"),
