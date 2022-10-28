@@ -1,3 +1,3 @@
 package param
 
-type File string // 字段
+type Field string // 字段
