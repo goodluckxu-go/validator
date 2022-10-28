@@ -156,7 +156,7 @@ validator.SetLangAddr("./zh_cn.json")
 [number](#number) |
 [integer](#integer) |
 [bool](#bool) |
-[date](#date)
+[date](#date) |
 [file](#file)
 ### 比较验证
 [eq](#eq) |
@@ -332,19 +332,19 @@ validator.Method.SetMethod("lte",5)
 ~~~
 
 #### <a id="len">len规则</a>
-验证是长度等于某个数。可获取字符串和数组长度
+验证是长度等于某个数。可获取字符串和数组长度或者文件大小(单位: kb)
 ~~~go
 validator.Method.SetMethod("len", 5)
 ~~~
 
 #### <a id="min">min规则</a>
-验证是长度大于等于某个数。可获取字符串和数组长度
+验证是长度大于等于某个数。可获取字符串和数组长度或者文件大小(单位: kb)
 ~~~go
 validator.Method.SetMethod("min", 5)
 ~~~
 
 #### <a id="max">max规则</a>
-验证是长度小于等于某个数。可获取字符串和数组长度
+验证是长度小于等于某个数。可获取字符串和数组长度或者文件大小(单位: kb)
 ~~~go
 validator.Method.SetMethod("max", 5)
 ~~~
