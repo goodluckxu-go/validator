@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/goodluckxu-go/validator/condition"
 	"github.com/goodluckxu-go/validator/param"
-	"github.com/gookit/color"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -363,7 +362,6 @@ func isEqualData(dataOne, dataTwo interface{}) bool {
 			if err != nil {
 				return false
 			}
-			color.Error.Println(dataOneDate, dataTwoDate)
 			if dataOneDate.Unix() == dataTwoDate.Unix() {
 				return true
 			}
