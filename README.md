@@ -4,9 +4,7 @@
 
 <span style="color:red;">注意：</span>
 
-<span style="color:red;">1. 数据data和规则rule必须传一个以上</span>
-
-<span style="color:red;">2. 规则a.b代表a对象里面key为b的数据，a.*.b代表a数组中对象里面key为b的数据(全局通用)</span>
+<span style="color:red;">1. 规则a.b代表a对象里面key为b的数据，a.*.b代表a数组中对象里面key为b的数据(全局通用)</span>
 
 引入
 ~~~go
