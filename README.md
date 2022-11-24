@@ -181,17 +181,15 @@ validator.SetLangAddr("./zh_cn.json")
 
 <span style="color:red;">3. 公式目前占1-3个字符</span>
 
-<span style="color:red;">4. 公式为 >,1则表示验证数据大于1</span>
+<span style="color:red;">4. 公式可以直接为true或false</span>
 
-<span style="color:red;">5. 公式为 3,>,1则表示判断3和1的大小</span>
+<span style="color:red;">5. 验证公式符号有>,>=,<,<=,=,!=,in,not。例如：>,3表示验证数据大于3；3,>,2表示比较3和2的值；param.Field("a"),>,2表示字段a的值大于2</span>
 
-<span style="color:red;">6. 公式为 param.Field("test.a.b"),=,5表示，字段test.a.b的值和5是否相等</span>
+<span style="color:red;">6. in是在数组里面，not是不再数组里面，其他公式符号都是简单类型数组(string,int等)</span>
 
-<span style="color:red;">7. 公式可以直接为true或false</span>
+<span style="color:red;">7. condition.Brackets表示括号，里面值和args一样规则</span>
 
-<span style="color:red;">8. condition.Brackets表示括号，里面值和args一样规则</span>
-
-<span style="color:red;">9. args公式为true则验证，否在跳过验证</span>
+<span style="color:red;">8. 所有公式满足为true则验证，否在跳过验证</span>
 ~~~go
 validator.Method.SetMethod("valid_condition", "=", 1, "&&", "<", 10, "&&", param.Field("list.*.a.a"), "=", 12, "&&", condition.Brackets(">", 2)),
 ~~~
