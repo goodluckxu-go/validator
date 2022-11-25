@@ -99,7 +99,7 @@ valid := validator.New().
 ### 方法
 #### GetAllData() interface{} 
 获取所有数据
-#### GetData(key string) []dataOne
+#### GetData(key string) []DataOne
 根据key获取数据
 
 例如：传 list.*.b. *.b ，获得
@@ -117,7 +117,7 @@ valid := validator.New().
 获取两个值最近的公共数据
 
 例如：当期验证数据list.0.a.a，传入list.*.a.b，获取数据则为list.0.a对象
-#### GetLevelData(key string) []dataOne
+#### GetLevelData(key string) []DataOne
 获取和验证同一层级的数据集合
 
 例如：当期验证数据list.0.a.a，传入list.*.a.b，获取数据则为list.0.a.b数据切片
