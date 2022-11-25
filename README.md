@@ -105,12 +105,12 @@ valid := validator.New().
 例如：传 list.*.b. *.b ，获得
 ~~~json
 [
-    {"fullPk":"list.0.b.0.b","data":6},
-    {"fullPk":"list.0.b.1.b","data":7},
-    {"fullPk":"list.0.b.2.b","data":8},
-    {"fullPk":"list.1.b.0.b","data":16},
-    {"fullPk":"list.1.b.1.b","data":17},
-    {"fullPk":"list.1.b.2.b","data":18}
+    {"FullPk":"list.0.b.0.b","Data":6},
+    {"FullPk":"list.0.b.1.b","Data":7},
+    {"FullPk":"list.0.b.2.b","Data":8},
+    {"FullPk":"list.1.b.0.b","Data":16},
+    {"FullPk":"list.1.b.1.b","Data":17},
+    {"FullPk":"list.1.b.2.b","Data":18}
 ]
 ~~~
 #### GetCommonData(key string) interface{}
