@@ -13,10 +13,10 @@ func (m *methods) Eq(d *Data, args ...interface{}) error {
 	validNotes := d.GetNotes()
 	if field, ok := val.(param.Field); ok {
 		for _, vMap := range d.GetLevelData(string(field)) {
-			if !isEqualData(validData, vMap.data) {
-				compare := d.handle.notesMap[vMap.fullPk]
+			if !isEqualData(validData, vMap.Data) {
+				compare := d.handle.notesMap[vMap.FullPk]
 				if compare == "" {
-					compare = vMap.fullPk
+					compare = vMap.FullPk
 				}
 				return getMessageError(lang.Eq, d.message, validNotes, compare)
 			}
@@ -38,14 +38,14 @@ func (m *methods) Gt(d *Data, args ...interface{}) error {
 	validNotes := d.GetNotes()
 	if field, ok := val.(param.Field); ok {
 		for _, vMap := range d.GetLevelData(string(field)) {
-			compareData, err := isCompareData(validData, vMap.data)
+			compareData, err := isCompareData(validData, vMap.Data)
 			if err != nil {
 				return err
 			}
 			if compareData != 1 {
-				compare := d.handle.notesMap[vMap.fullPk]
+				compare := d.handle.notesMap[vMap.FullPk]
 				if compare == "" {
-					compare = vMap.fullPk
+					compare = vMap.FullPk
 				}
 				return getMessageError(lang.Gt, d.message, validNotes, compare)
 			}
@@ -71,14 +71,14 @@ func (m *methods) Gte(d *Data, args ...interface{}) error {
 	validNotes := d.GetNotes()
 	if field, ok := val.(param.Field); ok {
 		for _, vMap := range d.GetLevelData(string(field)) {
-			compareData, err := isCompareData(validData, vMap.data)
+			compareData, err := isCompareData(validData, vMap.Data)
 			if err != nil {
 				return err
 			}
 			if compareData == -1 {
-				compare := d.handle.notesMap[vMap.fullPk]
+				compare := d.handle.notesMap[vMap.FullPk]
 				if compare == "" {
-					compare = vMap.fullPk
+					compare = vMap.FullPk
 				}
 				return getMessageError(lang.Gte, d.message, validNotes, compare)
 			}
@@ -104,14 +104,14 @@ func (m *methods) Lt(d *Data, args ...interface{}) error {
 	validNotes := d.GetNotes()
 	if field, ok := val.(param.Field); ok {
 		for _, vMap := range d.GetLevelData(string(field)) {
-			compareData, err := isCompareData(validData, vMap.data)
+			compareData, err := isCompareData(validData, vMap.Data)
 			if err != nil {
 				return err
 			}
 			if compareData != -1 {
-				compare := d.handle.notesMap[vMap.fullPk]
+				compare := d.handle.notesMap[vMap.FullPk]
 				if compare == "" {
-					compare = vMap.fullPk
+					compare = vMap.FullPk
 				}
 				return getMessageError(lang.Lt, d.message, validNotes, compare)
 			}
@@ -137,14 +137,14 @@ func (m *methods) Lte(d *Data, args ...interface{}) error {
 	validNotes := d.GetNotes()
 	if field, ok := val.(param.Field); ok {
 		for _, vMap := range d.GetLevelData(string(field)) {
-			compareData, err := isCompareData(validData, vMap.data)
+			compareData, err := isCompareData(validData, vMap.Data)
 			if err != nil {
 				return err
 			}
 			if compareData == 1 {
-				compare := d.handle.notesMap[vMap.fullPk]
+				compare := d.handle.notesMap[vMap.FullPk]
 				if compare == "" {
-					compare = vMap.fullPk
+					compare = vMap.FullPk
 				}
 				return getMessageError(lang.Lte, d.message, validNotes, compare)
 			}

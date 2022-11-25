@@ -323,9 +323,9 @@ func getCommonFullField(field, otherField string) (string, string) {
 	return strings.Join(rsList, "."), strings.Join(otherFieldList[i:], ".")
 }
 
-func getData(data interface{}, key, parentKey string) []dataOne {
+func getData(data interface{}, key, parentKey string) []DataOne {
 	if key == "" {
-		return []dataOne{{parentKey, data}}
+		return []DataOne{{parentKey, data}}
 	}
 	keyList := strings.Split(key, ".")
 	firstKey := keyList[0]
@@ -335,7 +335,7 @@ func getData(data interface{}, key, parentKey string) []dataOne {
 		if len(dataList) == 0 {
 			dataList = []interface{}{nil}
 		}
-		var newDataList []dataOne
+		var newDataList []DataOne
 		for index, childData := range dataList {
 			newDataList = append(newDataList, getData(childData, otherKey, getFullKey(parentKey, index))...)
 		}
@@ -343,7 +343,7 @@ func getData(data interface{}, key, parentKey string) []dataOne {
 	} else {
 		if dataList, ok := data.([]interface{}); ok {
 			index, _ := strconv.Atoi(firstKey)
-			var newDataList []dataOne
+			var newDataList []DataOne
 			newDataList = append(newDataList, getData(dataList[index], otherKey, getFullKey(parentKey, index))...)
 			return newDataList
 		} else {
@@ -592,9 +592,10 @@ func validSingleDate(single string, date, format *string) error {
 }
 
 // 验证参数
-//  args 参数
-//  minNum,maxNum 最小和最大参数数量
-//  ins 需要在这个列表中
+//
+//	args 参数
+//	minNum,maxNum 最小和最大参数数量
+//	ins 需要在这个列表中
 func validArgs(args []interface{}, minNum, maxNum int, ins ...interface{}) error {
 	if minNum < 0 {
 		return fmt.Errorf("minNum必须大于等于0")
@@ -675,7 +676,7 @@ func formulaCompare(d *Data, args ...interface{}) (bool, error) {
 			if field, ok := formulaArgs[0].(param.Field); ok {
 				rightData = true
 				for _, data := range d.GetLevelData(string(field)) {
-					bl, err := formulaCompare(d, data.data, symbol, formulaArgs[2])
+					bl, err := formulaCompare(d, data.Data, symbol, formulaArgs[2])
 					if err != nil {
 						return false, err
 					}

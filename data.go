@@ -17,7 +17,7 @@ func (d *Data) GetAllData() interface{} {
 }
 
 // GetData 获取数据且合并成数组
-func (d *Data) GetData(key string) []dataOne {
+func (d *Data) GetData(key string) []DataOne {
 	return getData(d.GetAllData(), key, "")
 }
 
@@ -32,7 +32,7 @@ func (d *Data) GetCommonData(key string) interface{} {
 }
 
 // GetLevelData 获取层级数据，遇到*合并数组
-func (d *Data) GetLevelData(key string) []dataOne {
+func (d *Data) GetLevelData(key string) []DataOne {
 	commonField, otherField := getCommonFullField(d.fullField, key)
 	ruleData := d.handle.ruleData[commonField]
 	if ruleData == nil {

@@ -97,9 +97,9 @@ type Rule struct {
 type Message [2]string
 
 // 单条数据
-type dataOne struct {
-	fullPk string
-	data   interface{}
+type DataOne struct {
+	FullPk string
+	Data   interface{}
 }
 
 // 是否过滤只获取验证参数
