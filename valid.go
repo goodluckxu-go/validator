@@ -20,6 +20,12 @@ type Valid struct {
 
 // Valid 验证数据
 func (v *Valid) Valid() (va *Valid) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			va.Error = errors.New(fmt.Sprintf("%v", r))
+		}
+	}()
 	va = v.getInstance()
 	var err error
 	if va.storage.req != nil {
