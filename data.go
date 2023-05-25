@@ -1,5 +1,7 @@
 package validator
 
+import "errors"
+
 // Data 数据
 type Data struct {
 	data      *interface{}
@@ -64,4 +66,14 @@ func (d *Data) setValidData(value interface{}) {
 	}
 	newData = upData(newData, d.fullField, value)
 	*d.data = newData
+}
+
+// JumpValid 跳过当前字段验证
+func (d *Data) JumpValid() error {
+	return errors.New(jumpValid)
+}
+
+// NextValid 执行下一个验证
+func (d *Data) NextValid() error {
+	return errors.New(nextValid)
 }

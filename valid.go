@@ -313,19 +313,17 @@ func (v *Valid) validRule(data *interface{}) (errs error) {
 				return
 			}
 			err := fn(d, m.args...)
-			// 是否验证下面数据
-			if inArray(me, []string{"valid_condition", "nullable"}) {
-				if err == nil {
-					break
-				}
-				if err.Error() == "" {
-					continue
-				}
+			if err == nil {
+				continue
 			}
-			if err != nil {
-				errs = err
-				return
+			if err.Error() == jumpValid {
+				break
 			}
+			if err.Error() == nextValid {
+				continue
+			}
+			errs = err
+			return
 		}
 		if len(row.methods) == validNum {
 			v.handle.ruleData[fullPk].isValid = true

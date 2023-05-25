@@ -1,7 +1,6 @@
 package validator
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -62,9 +61,9 @@ func (m *methods) ValidCondition(d *Data, args ...interface{}) error {
 		return err
 	}
 	if !bl {
-		return nil
+		return d.JumpValid()
 	}
-	return errors.New("")
+	return d.NextValid()
 }
 
 func (m *methods) Nullable(d *Data, args ...interface{}) error {
@@ -100,9 +99,9 @@ func (m *methods) Nullable(d *Data, args ...interface{}) error {
 		}
 	}
 	if isNull {
-		return nil
+		return d.JumpValid()
 	}
-	return errors.New("")
+	return d.NextValid()
 }
 
 func (m *methods) In(d *Data, args ...interface{}) error {

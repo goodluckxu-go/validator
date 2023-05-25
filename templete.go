@@ -2,6 +2,11 @@ package validator
 
 import "net/http"
 
+const (
+	jumpValid string = "<**>.###(BREAK)###.<**>"    // 跳过该字段所有验证
+	nextValid string = "<**>.###(CONTINUE)###.<**>" // 执行该字段下一个验证
+)
+
 var (
 	Method method   // 规则方法
 	lang   language // 语言
