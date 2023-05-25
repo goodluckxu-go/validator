@@ -125,9 +125,9 @@ valid := validator.New().
 获取验证数据
 #### GetNotes() string
 获取注释
-### func (d *Data) JumpValid() error
+#### func (d *Data) JumpValid() error
 跳过当前字段的验证
-### func (d *Data) NextValid() error
+#### func (d *Data) NextValid() error
 执行下一条验证
 
 ## 返回错误信息(callback)
