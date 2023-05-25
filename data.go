@@ -73,7 +73,7 @@ func (d *Data) JumpValid() error {
 	return errors.New(jumpValid)
 }
 
-// NextValid 执行下一个验证
+// NextValid 执行下一条验证
 func (d *Data) NextValid() error {
 	return errors.New(nextValid)
 }
