@@ -8,7 +8,6 @@ import (
 	"github.com/goodluckxu-go/validator/condition"
 	"github.com/goodluckxu-go/validator/param"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"reflect"
@@ -20,14 +19,13 @@ import (
 
 // 读取body内容
 func readBody(r *http.Request) []byte {
-	var bodyBytes []byte // 我们需要的body内容
 	// 从原有Request.Body读取
-	bodyBytes, err := ioutil.ReadAll(r.Body)
+	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		return bodyBytes
 	}
 	// 新建缓冲区并替换原有Request.body
-	r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 	return bodyBytes
 }
 
