@@ -15,7 +15,6 @@ var (
 // 规则方法
 type method struct {
 	methods []methodData
-	list    []*method
 }
 
 type methodData struct {
@@ -29,7 +28,7 @@ func (m *method) List(me ...*method) []*method {
 
 // SetFun 设置自定义验证方法(其他参数可用于获取外部数据或者传地址修改外部数据)
 func (m *method) SetFun(fn func(d *Data, args ...interface{}) error, args ...interface{}) (ms *method) {
-	ms = getInstance(m).(*method)
+	ms = m.getInstance()
 	ms.methods = append(ms.methods, methodData{
 		method: setMethodFunc(fn),
 		args:   args,
@@ -39,11 +38,17 @@ func (m *method) SetFun(fn func(d *Data, args ...interface{}) error, args ...int
 
 // SetMethod 设置默认验证方法
 func (m *method) SetMethod(r string, args ...interface{}) (ms *method) {
-	ms = getInstance(m).(*method)
+	ms = m.getInstance()
 	ms.methods = append(ms.methods, methodData{
 		method: r,
 		args:   args,
 	})
+	return
+}
+
+func (m *method) getInstance() (ms *method) {
+	ms = new(method)
+	ms.methods = m.methods
 	return
 }
 

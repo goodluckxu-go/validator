@@ -209,18 +209,6 @@ func isMapInSliceMap(list []interface{}, where map[string]interface{}) bool {
 	return false
 }
 
-func getInstance(in interface{}) interface{} {
-	var rs interface{}
-	switch in.(type) {
-	case *method:
-		newIn, _ := in.(*method)
-		out := new(method)
-		out.methods = newIn.methods
-		rs = out
-	}
-	return rs
-}
-
 func getFullKey(fullKey string, field interface{}) string {
 	var fullKeyList []string
 	if fullKey != "" {
