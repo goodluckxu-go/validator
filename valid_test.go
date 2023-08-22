@@ -5,16 +5,32 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/goodluckxu-go/validator/param"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"sync"
 	"testing"
 	"time"
 )
 
-func getRequest(requestBody []byte) *http.Request {
-	r, _ := http.NewRequest("GET", "/", ioutil.NopCloser(bytes.NewBuffer(requestBody)))
-	r.Header.Add("Content-Type", "application/json")
-	return r
+var req *http.Request
+var reqOnce sync.Once
+
+func init() {
+	// 全局验证
+	RegisterMethod("linda_auth", func(d *Data, args ...interface{}) error {
+		if d.GetValidData() == "linda" && args[0] == "admin" && args[1] == 123456 {
+			return nil
+		}
+		return fmt.Errorf("%s不是linda", d.GetNotes())
+	})
+}
+
+func getRequest() *http.Request {
+	reqOnce.Do(func() {
+		req, _ = http.NewRequest("GET", "/", io.NopCloser(bytes.NewBuffer(getJsonBody())))
+		req.Header.Add("Content-Type", "application/json")
+	})
+	return req
 }
 
 func getBody() interface{} {
@@ -145,16 +161,9 @@ func getRules() []Rule {
 
 func BenchmarkValid_Valid(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		// 全局验证
-		RegisterMethod("linda_auth", func(d *Data, args ...interface{}) error {
-			if d.GetValidData() == "linda" && args[0] == "admin" && args[1] == 123456 {
-				return nil
-			}
-			return fmt.Errorf("%s不是linda", d.GetNotes())
-		})
 		data := map[string]interface{}{}
 		v := New().
-			SetRequest(getRequest(getJsonBody())).
+			SetRequest(getRequest()).
 			SetData(&data).
 			SetRules(getRules()).
 			SetMessages([]Message{
@@ -168,16 +177,9 @@ func BenchmarkValid_Valid(b *testing.B) {
 }
 
 func TestValid_Valid(t *testing.T) {
-	// 全局验证
-	RegisterMethod("linda_auth", func(d *Data, args ...interface{}) error {
-		if d.GetValidData() == "linda" && args[0] == "admin" && args[1] == 123456 {
-			return nil
-		}
-		return fmt.Errorf("%s不是linda", d.GetNotes())
-	})
 	data := map[string]interface{}{}
 	v := New().
-		SetRequest(getRequest(getJsonBody())).
+		SetRequest(getRequest()).
 		SetData(&data).
 		SetRules(getRules()).
 		SetMessages([]Message{
