@@ -17,9 +17,11 @@
 
 ## 用法(usage)
 
-<span style="color:red;">注意：</span>
+<span style="color:red">注意：</span>
 
-<span style="color:red;">1. 规则a.b代表a对象里面key为b的数据，a.*.b代表a数组中对象里面key为b的数据(全局通用)</span>
+<span style="color:red">1. 规则a.b代表a对象里面key为b的数据，a.*.b代表a数组中对象里面key为b的数据(全局通用)</span>
+
+<span style="color:red">2. 验证参数存在 param.Field("fieldName") 时，fieldName 必须存在验证规则中</span>
 
 引入
 ~~~go
