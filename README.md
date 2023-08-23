@@ -1,7 +1,7 @@
 # go版本的validator通用验证器
 
-## 修改日志
-2023-08-23
+## 修改日志(change log)
+### 2023-08-23
 ~~~
 1. 性能优化
 2. 增加 SetValidData(value interface{}) 方法可重新设置验证数据
