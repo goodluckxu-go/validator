@@ -3,7 +3,9 @@
 ## 修改日志
 2023-08-23
 ~~~
-性能优化
+1. 性能优化
+2. 增加 SetValidData(value interface{}) 方法可重新设置验证数据
+3. 删除 func (d *Data) NextValid() error (注: 和直接返回nil相同)
 ~~~
 改版前
 
