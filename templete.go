@@ -29,7 +29,7 @@ func (m *method) List(me ...*method) []*method {
 func (m *method) SetFun(fn func(d *Data, args ...interface{}) error, args ...interface{}) (ms *method) {
 	ms = m.getInstance()
 	ms.methods = append(ms.methods, methodData{
-		method: setMethodFunc(fn),
+		method: methodFunc(fn),
 		args:   args,
 	})
 	return

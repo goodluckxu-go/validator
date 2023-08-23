@@ -21,5 +21,7 @@
   "Lte":       "${notes}必须小于等于${compare}",
   "Len":       "${notes}长度必须是${len}",
   "Min":       "${notes}最小长度为${len}",
-  "Max":       "${notes}最大长度为${len}"
+  "Max":       "${notes}最大长度为${len}",
+  "Suffix":    "${notes}后缀必须在数组${array}中",
+  "Mime":      "${notes}类型必须在数组${array}中"
 }

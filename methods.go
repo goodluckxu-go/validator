@@ -124,7 +124,7 @@ func (m *methods) In(d *Data, args ...interface{}) error {
 				return nil
 			}
 		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64:
-			if interfaceToFloat64(validData) == interfaceToFloat64(child) {
+			if toFloat64(validData) == toFloat64(child) {
 				return nil
 			}
 		}
@@ -156,7 +156,7 @@ func (m *methods) NotIn(d *Data, args ...interface{}) error {
 				})
 			}
 		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64:
-			if interfaceToFloat64(validData) == interfaceToFloat64(child) {
+			if toFloat64(validData) == toFloat64(child) {
 				return validError(lang.NotIn, d.getMessage(), langArg{
 					notes: d.GetNotes(),
 					array: args[0],

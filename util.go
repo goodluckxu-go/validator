@@ -374,8 +374,8 @@ func isEqualData(dataOne, dataTwo interface{}) bool {
 			return true
 		}
 	case int, float64:
-		dataOneFloat64 := interfaceToFloat64(dataOne)
-		dataTwoFloat64 := interfaceToFloat64(dataTwo)
+		dataOneFloat64 := toFloat64(dataOne)
+		dataTwoFloat64 := toFloat64(dataTwo)
 		if dataOneFloat64 == dataTwoFloat64 {
 			return true
 		}
@@ -403,8 +403,8 @@ func isCompareData(dataOne, dataTwo interface{}) (int, error) {
 	errInfo := errors.New("比较的数必须是数字,字符串的数字或日期且类型匹配")
 	switch dataOne.(type) {
 	case int64, float64:
-		dataOneFloat64 = interfaceToFloat64(dataOne)
-		dataTwoFloat64 = interfaceToFloat64(dataTwo)
+		dataOneFloat64 = toFloat64(dataOne)
+		dataTwoFloat64 = toFloat64(dataTwo)
 	case string:
 		isNumber := true
 		dataOneFloat64, err = strconv.ParseFloat(fmt.Sprintf("%v", dataOne), 64)
@@ -442,63 +442,6 @@ func isCompareData(dataOne, dataTwo interface{}) (int, error) {
 		return -1, nil
 	}
 	return 0, nil
-}
-
-// 获取float64类型数据
-func interfaceToFloat64(i interface{}) float64 {
-	if i == nil {
-		return 0
-	}
-	var float64I float64
-	switch i.(type) {
-	case int:
-		float64I = float64(i.(int))
-	case int8:
-		float64I = float64(i.(int8))
-	case int16:
-		float64I = float64(i.(int16))
-	case int32:
-		float64I = float64(i.(int32))
-	case int64:
-		float64I = float64(i.(int64))
-	case uint:
-		float64I = float64(i.(uint))
-	case uint8:
-		float64I = float64(i.(uint8))
-	case uint16:
-		float64I = float64(i.(uint16))
-	case uint32:
-		float64I = float64(i.(uint32))
-	case uint64:
-		float64I = float64(i.(uint64))
-	case float32:
-		float64I = float64(i.(float32))
-	case float64:
-		float64I = i.(float64)
-	case string:
-		float64I, _ = strconv.ParseFloat(i.(string), 64)
-	case bool:
-		if i.(bool) {
-			float64I = 1
-		}
-	}
-	return float64I
-}
-
-func inArray(val interface{}, array interface{}) (exists bool) {
-	exists = false
-	switch reflect.TypeOf(array).Kind() {
-	case reflect.Slice:
-		s := reflect.ValueOf(array)
-
-		for i := 0; i < s.Len(); i++ {
-			if reflect.DeepEqual(val, s.Index(i).Interface()) == true {
-				exists = true
-				return
-			}
-		}
-	}
-	return
 }
 
 // 字符串转时间
@@ -770,6 +713,22 @@ func formulaCompare(d *Data, args ...interface{}) (bool, error) {
 	return isBool, nil
 }
 
+func inArray(val interface{}, array interface{}) (exists bool) {
+	exists = false
+	switch reflect.TypeOf(array).Kind() {
+	case reflect.Slice:
+		s := reflect.ValueOf(array)
+
+		for i := 0; i < s.Len(); i++ {
+			if reflect.DeepEqual(val, s.Index(i).Interface()) == true {
+				exists = true
+				return
+			}
+		}
+	}
+	return
+}
+
 func inArrayString(v string, list []string) bool {
 	for _, val := range list {
 		if val == v {
@@ -777,6 +736,47 @@ func inArrayString(v string, list []string) bool {
 		}
 	}
 	return false
+}
+
+// 获取float64类型数据
+func toFloat64(i interface{}) float64 {
+	if i == nil {
+		return 0
+	}
+	var float64I float64
+	switch i.(type) {
+	case int:
+		float64I = float64(i.(int))
+	case int8:
+		float64I = float64(i.(int8))
+	case int16:
+		float64I = float64(i.(int16))
+	case int32:
+		float64I = float64(i.(int32))
+	case int64:
+		float64I = float64(i.(int64))
+	case uint:
+		float64I = float64(i.(uint))
+	case uint8:
+		float64I = float64(i.(uint8))
+	case uint16:
+		float64I = float64(i.(uint16))
+	case uint32:
+		float64I = float64(i.(uint32))
+	case uint64:
+		float64I = float64(i.(uint64))
+	case float32:
+		float64I = float64(i.(float32))
+	case float64:
+		float64I = i.(float64)
+	case string:
+		float64I, _ = strconv.ParseFloat(i.(string), 64)
+	case bool:
+		if i.(bool) {
+			float64I = 1
+		}
+	}
+	return float64I
 }
 
 func toString(i interface{}) string {

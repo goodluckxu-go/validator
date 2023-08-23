@@ -43,11 +43,3 @@ type methodsApi interface {
 	Suffix(d *Data, args ...interface{}) error
 	Mime(d *Data, args ...interface{}) error
 }
-
-func newMethodsApi(api methodsApi) methodsApi {
-	return api
-}
-
-func setMethodFunc(fn methodFunc) methodFunc {
-	return fn
-}
