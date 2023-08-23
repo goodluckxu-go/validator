@@ -3,8 +3,7 @@ package validator
 import "net/http"
 
 const (
-	jumpValid string = "<**>.###(BREAK)###.<**>"    // 跳过该字段所有验证
-	nextValid string = "<**>.###(CONTINUE)###.<**>" // 执行该字段下一个验证
+	jumpValid string = "<**>.###(BREAK)###.<**>" // 跳过该字段所有验证
 )
 
 var (
@@ -62,12 +61,9 @@ type storage struct {
 
 // 处理数据
 type handle struct {
-	fileMap    map[string]*file
-	ruleIndex  []string
-	ruleData   map[string]*ruleAsData
-	messages   [][3]string
-	notesMap   map[string]string
-	messageMap map[string]string
+	fileMap     map[string]*file // 文件数据
+	ruleRowList []ruleRow        // 验证数据
+	pathIndex   map[string]int   // 验证数据索引
 }
 
 // 文件
@@ -78,29 +74,31 @@ type file struct {
 	Size   int64  // 文件大小
 }
 
-// 处理数据
-type ruleRow struct {
-	field    string       // 验证字段(单个字段)
-	pk       string       // 全字段
-	methods  []methodData // 验证规则方法
-	notes    string       // 字段注释
-	children []ruleRow    // 子集
+type langArg struct {
+	notes   interface{} // 注释
+	array   interface{} // 数组
+	compare interface{} // 比较
+	len     interface{} // 长度
 }
 
-// 拆分数据组装
-type ruleAsData struct {
-	pk      string
-	data    interface{}
-	methods []methodData
-	notes   string
-	isValid bool // 数据已经验证
+// 规则和数据对应的单条规则
+type ruleRow struct {
+	path      string       // 路径
+	data      interface{}  // 数据
+	notes     string       // 字段注释
+	methods   []methodData // 验证规则方法
+	isValid   bool         // 是否验证
+	samePaths []string
 }
 
 // Rule 单个规则
 type Rule struct {
-	Field   string
-	Methods []*method
-	Notes   string
+	prefix       string      // 临时前缀
+	data         interface{} // 临时数据
+	samePrefixes []string
+	Field        string
+	Methods      []*method
+	Notes        string
 }
 
 // Message 消息

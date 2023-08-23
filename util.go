@@ -29,193 +29,241 @@ func readBody(r *http.Request) []byte {
 	return bodyBytes
 }
 
-func disintegrateRules(args ...interface{}) ([]interface{}, error) {
-	var rs []Rule
-	var inList []interface{}
-	extendsMap := map[string]interface{}{}
-	for _, arg := range args {
-		switch arg.(type) {
-		case []Rule:
-			rs = arg.([]Rule)
-		case []interface{}:
-			inList = arg.([]interface{})
-		case map[string]interface{}:
-			extendsMap = arg.(map[string]interface{})
+// 将规则和数据处理成单条
+func disintegrateRules(rules []Rule, data interface{}, init bool) (rs []ruleRow, err error) {
+	notData := "0"
+	var otherRules []Rule
+	boolMap := map[string]interface{}{} // 是否时map类型
+	for _, rule := range rules {
+		if !init {
+			data = rule.data
 		}
-	}
-	var list []interface{}
-	if rs != nil {
-		list = append(list, map[string]interface{}{
-			"field": "root",
-		})
-		for _, v := range rs {
-			newFiled := strings.Join([]string{
-				"root",
-				v.Field,
-			}, ".")
-			list = append(list, map[string]interface{}{
-				"field":     newFiled,
-				"pk":        "",
-				"parent_pk": "",
-			})
-			extendsMap[newFiled] = map[string]interface{}{
-				"methods": v.Methods,
-				"notes":   v.Notes,
+		var ruleMethods []methodData
+		for _, ruleMethod := range rule.Methods {
+			ruleMethods = append(ruleMethods, ruleMethod.methods...)
+		}
+		fieldList := strings.Split(rule.Field, ".")
+		if len(fieldList) == 1 {
+			// 等于1时存在规则添加规则数据
+			if isSlice(fieldList[0]) {
+				if boolMap[rule.prefix] == nil {
+					boolMap[rule.prefix] = false
+				} else if boolMap[rule.prefix] == true {
+					err = fmt.Errorf("%s冲突，map和slice不能并存", rule.prefix)
+					return
+				}
+				dataList, _ := data.([]interface{})
+				if len(dataList) == 0 {
+					samePaths, path := samesAdd(rule.samePrefixes, [][]interface{}{
+						{".", notData},
+						{".*"},
+					})
+					rs = append(rs, ruleRow{
+						path:      path,
+						notes:     rule.Notes,
+						methods:   ruleMethods,
+						samePaths: samePaths,
+					})
+				} else {
+					for k, v := range dataList {
+						samePaths, path := samesAdd(rule.samePrefixes, [][]interface{}{
+							{".", k},
+							{".*"},
+						})
+						rs = append(rs, ruleRow{
+							path:      path,
+							data:      v,
+							notes:     rule.Notes,
+							methods:   ruleMethods,
+							samePaths: samePaths,
+						})
+					}
+				}
+			} else {
+				if boolMap[rule.prefix] == nil {
+					boolMap[rule.prefix] = true
+				} else if boolMap[rule.prefix] == false {
+					err = fmt.Errorf("%s冲突，map和slice不能并存", rule.prefix)
+					return
+				}
+				samePaths, path := samesAdd(rule.samePrefixes, [][]interface{}{
+					{".", fieldList[0]},
+				})
+				dataMap, _ := data.(map[string]interface{})
+				rs = append(rs, ruleRow{
+					path:      path,
+					data:      dataMap[fieldList[0]],
+					notes:     rule.Notes,
+					methods:   ruleMethods,
+					samePaths: samePaths,
+				})
 			}
+			continue
 		}
-	} else if len(inList) > 0 {
-		list = inList
-	} else {
-		return list, nil
-	}
-	// 如果传入数据为非json数据
-	if len(rs) == 1 && rs[0].Field == "" {
-		onlyOne := rs[0]
-		return []interface{}{
-			map[string]interface{}{
-				"pk":        "root",
-				"parent_pk": "",
-			},
-			map[string]interface{}{
-				"pk":        "root.",
-				"parent_pk": "root",
-				"field":     "",
-				"methods":   onlyOne.Methods,
-				"notes":     onlyOne.Notes,
-			},
-		}, nil
-	}
-	var newList, otherList []interface{}
-	parentMap := map[string]string{}
-	var tmpList []string
-	for _, v := range list {
-		vMap, _ := v.(map[string]interface{})
-		field, _ := vMap["field"].(string)
-		fieldList := strings.Split(field, ".")
-		firstField := fieldList[0]
-		otherField := strings.Join(fieldList[1:], ".")
-		parentPk, _ := vMap["parent_pk"].(string)
-		var pkList []string
-		if parentPk != "" {
-			pkList = append(pkList, parentPk)
-		}
-		pkList = append(pkList, firstField)
-		pk := strings.Join(pkList, ".")
-		parentPkList := strings.Split(parentPk, ".")
-		var completePkList []string
-		completePkList = append(completePkList, pk)
-		if otherField != "" {
-			completePkList = append(completePkList, otherField)
-		}
-		completePk := strings.Join(completePkList, ".")
-		completePk = strings.TrimPrefix(completePk, "root.")
-		if parentMap[parentPk] == "" {
-			parentMap[parentPk] = firstField
-		}
-		if (parentMap[parentPk] == "*" && firstField != "*") || (parentMap[parentPk] != "*" && firstField == "*") {
-			tmpList = append(tmpList, "["+completePk+"]")
-			return nil, fmt.Errorf("%s冲突，map和slice不能并存", strings.Join(tmpList, ","))
-		}
-		tmpList = []string{"[" + completePk + "]"}
-		parentMap[parentPk] = firstField
-		if !isMapInSliceMap(newList, map[string]interface{}{
-			"field":     firstField,
-			"parent_pk": parentPk,
-		}) {
-			extends, _ := extendsMap[pk].(map[string]interface{})
-			newList = append(newList, map[string]interface{}{
-				"pk":        pk,
-				"parent_pk": parentPk,
-				"field":     firstField,
-				"methods":   extends["methods"],
-				"notes":     extends["notes"],
-			})
-		}
-		if !isMapInSliceMap(otherList, map[string]interface{}{
-			"field":     otherField,
-			"parent_pk": parentPk,
-		}) && otherField != "" {
-			parentPkList = []string{}
-			if parentPk != "" {
-				parentPkList = append(parentPkList, parentPk)
+		// 不等于与需要组装otherRules递归
+		if isSlice(fieldList[0]) {
+			if boolMap[rule.prefix] == nil {
+				boolMap[rule.prefix] = false
+			} else if boolMap[rule.prefix] == true {
+				err = fmt.Errorf("%s冲突，map和slice不能并存", rule.prefix)
+				return
 			}
-			parentPkList = append(parentPkList, firstField)
-			parentPk = strings.Join(parentPkList, ".")
-			otherList = append(otherList, map[string]interface{}{
-				"parent_pk": parentPk,
-				"field":     otherField,
+			dataList, _ := data.([]interface{})
+			if len(dataList) == 0 {
+				samePrefixes, prefix := samesAdd(rule.samePrefixes, [][]interface{}{
+					{".", notData},
+					{".*"},
+				})
+				otherRules = append(otherRules, Rule{
+					prefix:       prefix,
+					Field:        strings.Join(fieldList[1:], "."),
+					Methods:      rule.Methods,
+					Notes:        rule.Notes,
+					samePrefixes: samePrefixes,
+				})
+			} else {
+				for k, v := range dataList {
+					samePrefixes, prefix := samesAdd(rule.samePrefixes, [][]interface{}{
+						{".", k},
+						{".*"},
+					})
+					otherRules = append(otherRules, Rule{
+						prefix:       prefix,
+						data:         v,
+						Field:        strings.Join(fieldList[1:], "."),
+						Methods:      rule.Methods,
+						Notes:        rule.Notes,
+						samePrefixes: samePrefixes,
+					})
+				}
+			}
+		} else {
+			if boolMap[rule.prefix] == nil {
+				boolMap[rule.prefix] = true
+			} else if boolMap[rule.prefix] == false {
+				err = fmt.Errorf("%s冲突，map和slice不能并存", rule.prefix)
+				return
+			}
+			samePrefixes, prefix := samesAdd(rule.samePrefixes, [][]interface{}{
+				{".", fieldList[0]},
+			})
+			dataMap, _ := data.(map[string]interface{})
+			otherRules = append(otherRules, Rule{
+				prefix:       prefix,
+				data:         dataMap[fieldList[0]],
+				Field:        strings.Join(fieldList[1:], "."),
+				Methods:      rule.Methods,
+				Notes:        rule.Notes,
+				samePrefixes: samePrefixes,
 			})
 		}
 	}
-	if len(otherList) > 0 {
-		childList, err := disintegrateRules(otherList, extendsMap)
-		if err != nil {
-			return nil, err
+	if len(otherRules) > 0 {
+		if childRs, er := disintegrateRules(otherRules, nil, false); er != nil {
+			err = er
+			return
+		} else {
+			rs = append(rs, childRs...)
 		}
-		newList = append(newList, childList...)
 	}
-	return newList, nil
+	return
 }
 
-func assembleRuleRow(list []interface{}, args ...interface{}) []ruleRow {
-	parentPk := ""
-	for _, arg := range args {
-		switch arg.(type) {
-		case string:
-			parentPk = arg.(string)
-		}
+// 规则排序
+func ruleRowSort(list []ruleRow) (rs []ruleRow, pathIndex map[string]int) {
+	rs = append(rs, list[0])
+	list = list[1:]
+	pathIndex = map[string]int{
+		list[0].path: 0,
 	}
-	var newList []ruleRow
-	for _, v := range list {
-		vMap, _ := v.(map[string]interface{})
-		if vMap["parent_pk"] == parentPk {
-			pk, _ := vMap["pk"].(string)
-			field, _ := vMap["field"].(string)
-			m, _ := vMap["methods"].([]*method)
-			var mList []methodData
-			for _, mv := range m {
-				mList = append(mList, mv.methods...)
+	for {
+		isAdd := false
+		for i := len(rs) - 1; i >= 0; i-- {
+			v := rs[i]
+			for k, v1 := range list {
+				if strings.Index(v1.path, v.path) != -1 {
+					rs = append(rs, v1)
+					pathIndex[v1.path] = len(rs) - 1
+					isAdd = true
+					if k == 0 {
+						list = list[1:]
+					} else {
+						list = append(list[:k], list[k+1:]...)
+					}
+					if len(list) == 0 {
+						return
+					}
+					break
+				}
 			}
-			notes, _ := vMap["notes"].(string)
-			children := assembleRuleRow(list, pk)
-			newList = append(newList, ruleRow{
-				field:    field,
-				pk:       pk,
-				methods:  mList,
-				notes:    notes,
-				children: children,
-			})
+			if isAdd {
+				break
+			}
+		}
+		if !isAdd {
+			rs = append(rs, list[0])
+			pathIndex[list[0].path] = len(rs) - 1
+			list = list[1:]
+			if len(list) == 0 {
+				return
+			}
 		}
 	}
-	return newList
 }
 
-func isMapInSliceMap(list []interface{}, where map[string]interface{}) bool {
-	for _, v := range list {
-		vMap, _ := v.(map[string]interface{})
-		isEq := true
-		for k, w := range where {
-			if vMap[k] != w {
-				isEq = false
-			}
-		}
-		if len(where) == 0 {
-			isEq = false
-		}
-		if isEq {
-			return true
-		}
+func isSlice(prefix string) bool {
+	if prefix == "*" {
+		return true
+	}
+	if _, err := strconv.Atoi(prefix); err == nil {
+		return true
 	}
 	return false
 }
 
-func getFullKey(fullKey string, field interface{}) string {
-	var fullKeyList []string
-	if fullKey != "" {
-		fullKeyList = append(fullKeyList, fullKey)
+func samesAdd(sames []string, adds [][]interface{}) (rs []string, now string) {
+	if len(sames) == 0 {
+		for k, add := range adds {
+			ks := stringJoin("", ".", add...)
+			if k == 0 {
+				now = ks
+			}
+			rs = append(rs, ks)
+		}
+		return
 	}
-	fullKeyList = append(fullKeyList, fmt.Sprintf("%v", field))
-	return strings.Join(fullKeyList, ".")
+	for k, same := range sames {
+		for k1, add := range adds {
+			ks := stringJoin(same, ".", add...)
+			if k == 0 && k1 == 0 {
+				now = ks
+			}
+			rs = append(rs, ks)
+		}
+	}
+	return
+}
+
+func stringJoin(s, deletePrefix string, vs ...interface{}) string {
+	var buf bytes.Buffer
+	if s != "" {
+		buf.WriteString(s)
+	}
+	for _, v := range vs {
+		switch v.(type) {
+		case string:
+			buf.WriteString(v.(string))
+		case []byte:
+			buf.Write(v.([]byte))
+		default:
+			buf.WriteString(toString(v))
+		}
+	}
+	s = buf.String()
+	if deletePrefix != "" {
+		s = strings.TrimPrefix(s, deletePrefix)
+	}
+	return s
 }
 
 func upData(data interface{}, key string, value interface{}) interface{} {
@@ -271,21 +319,21 @@ func parseLang(langAddr string) {
 	}
 }
 
-func getMessageError(langStr string, message string, args ...interface{}) error {
-	if len(args) > 0 {
-		langStr = strings.Replace(langStr, "${notes}", fmt.Sprintf("%v", args[0]), -1)
-	}
-	if len(args) > 1 {
-		switch args[1].(type) {
-		case time.Time:
-			args[1] = args[1].(time.Time).Format("2006-01-02 15:04:05")
-		}
-		langStr = strings.Replace(langStr, "${compare}", fmt.Sprintf("%v", args[1]), -1)
-		langStr = strings.Replace(langStr, "${len}", fmt.Sprintf("%v", args[1]), -1)
-		langStr = strings.Replace(langStr, "${array}", fmt.Sprintf("%v", args[1]), -1)
-	}
+func validError(langStr string, message string, arg langArg) error {
 	if message != "" {
-		langStr = message
+		return errors.New(message)
+	}
+	if arg.notes != nil {
+		langStr = strings.ReplaceAll(langStr, "${notes}", toString(arg.notes))
+	}
+	if arg.array != nil {
+		langStr = strings.ReplaceAll(langStr, "${array}", toString(arg.array))
+	}
+	if arg.compare != nil {
+		langStr = strings.ReplaceAll(langStr, "${compare}", toString(arg.compare))
+	}
+	if arg.len != nil {
+		langStr = strings.ReplaceAll(langStr, "${len}", toString(arg.len))
 	}
 	return errors.New(langStr)
 }
@@ -307,36 +355,6 @@ func getCommonFullField(field, otherField string) (string, string) {
 		i++
 	}
 	return strings.Join(rsList, "."), strings.Join(otherFieldList[i:], ".")
-}
-
-func getData(data interface{}, key, parentKey string) []DataOne {
-	if key == "" {
-		return []DataOne{{parentKey, data}}
-	}
-	keyList := strings.Split(key, ".")
-	firstKey := keyList[0]
-	otherKey := strings.Join(keyList[1:], ".")
-	if firstKey == "*" {
-		dataList, _ := data.([]interface{})
-		if len(dataList) == 0 {
-			dataList = []interface{}{nil}
-		}
-		var newDataList []DataOne
-		for index, childData := range dataList {
-			newDataList = append(newDataList, getData(childData, otherKey, getFullKey(parentKey, index))...)
-		}
-		return newDataList
-	} else {
-		if dataList, ok := data.([]interface{}); ok {
-			index, _ := strconv.Atoi(firstKey)
-			var newDataList []DataOne
-			newDataList = append(newDataList, getData(dataList[index], otherKey, getFullKey(parentKey, index))...)
-			return newDataList
-		} else {
-			dataMap, _ := data.(map[string]interface{})
-			return getData(dataMap[firstKey], otherKey, getFullKey(parentKey, firstKey))
-		}
-	}
 }
 
 // 比较两个数是否相等
@@ -578,10 +596,9 @@ func validSingleDate(single string, date, format *string) error {
 }
 
 // 验证参数
-//
-//	args 参数
-//	minNum,maxNum 最小和最大参数数量
-//	ins 需要在这个列表中
+// args 参数
+// minNum,maxNum 最小和最大参数数量
+// ins 需要在这个列表中
 func validArgs(args []interface{}, minNum, maxNum int, ins ...interface{}) error {
 	if minNum < 0 {
 		return fmt.Errorf("minNum必须大于等于0")
@@ -751,4 +768,117 @@ func formulaCompare(d *Data, args ...interface{}) (bool, error) {
 		}
 	}
 	return isBool, nil
+}
+
+func inArrayString(v string, list []string) bool {
+	for _, val := range list {
+		if val == v {
+			return true
+		}
+	}
+	return false
+}
+
+func toString(i interface{}) string {
+	if i == nil {
+		return ""
+	}
+	switch i.(type) {
+	case string:
+		return i.(string)
+	case *string:
+		return *i.(*string)
+	case int, int8, int16, int32, int64:
+		var i64 int64
+		switch i.(type) {
+		case int:
+			i64 = int64(i.(int))
+		case int8:
+			i64 = int64(i.(int8))
+		case int16:
+			i64 = int64(i.(int16))
+		case int32:
+			i64 = int64(i.(int32))
+		case int64:
+			i64 = i.(int64)
+		}
+		return strconv.FormatInt(i64, 10)
+	case *int, *int8, *int16, *int32, *int64:
+		var i64 int64
+		switch i.(type) {
+		case *int:
+			i64 = int64(*i.(*int))
+		case *int8:
+			i64 = int64(*i.(*int8))
+		case *int16:
+			i64 = int64(*i.(*int16))
+		case *int32:
+			i64 = int64(*i.(*int32))
+		case *int64:
+			i64 = *i.(*int64)
+		}
+		return strconv.FormatInt(i64, 10)
+	case *uint, *uint8, *uint16, *uint32, *uint64:
+		var ui64 uint64
+		switch i.(type) {
+		case *uint:
+			ui64 = uint64(*i.(*uint))
+		case *uint8:
+			ui64 = uint64(*i.(*uint8))
+		case *uint16:
+			ui64 = uint64(*i.(*uint16))
+		case *uint32:
+			ui64 = uint64(*i.(*uint32))
+		case *uint64:
+			ui64 = *i.(*uint64)
+		}
+		return strconv.FormatUint(ui64, 10)
+	case uint, uint8, uint16, uint32, uint64:
+		var ui64 uint64
+		switch i.(type) {
+		case uint:
+			ui64 = uint64(i.(uint))
+		case uint8:
+			ui64 = uint64(i.(uint8))
+		case uint16:
+			ui64 = uint64(i.(uint16))
+		case uint32:
+			ui64 = uint64(i.(uint32))
+		case uint64:
+			ui64 = i.(uint64)
+		}
+		return strconv.FormatUint(ui64, 10)
+	case float32, float64:
+		var f64 float64
+		switch i.(type) {
+		case float32:
+			f64 = float64(i.(float32))
+		case float64:
+			f64 = i.(float64)
+		}
+		return strconv.FormatFloat(f64, 'G', -1, 64)
+	case *float32, *float64:
+		var f64 float64
+		switch i.(type) {
+		case *float32:
+			f64 = float64(*i.(*float32))
+		case *float64:
+			f64 = *i.(*float64)
+		}
+		return strconv.FormatFloat(f64, 'G', -1, 64)
+	case bool:
+		return strconv.FormatBool(i.(bool))
+	case complex64, complex128:
+		var c128 complex128
+		switch i.(type) {
+		case complex64:
+			c128 = complex128(i.(complex64))
+		case complex128:
+			c128 = i.(complex128)
+		}
+		return strconv.FormatComplex(c128, 'G', -1, 128)
+	case error:
+		return i.(error).Error()
+	}
+	return fmt.Sprintf("%v", i)
 }

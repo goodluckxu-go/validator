@@ -13,14 +13,14 @@ func (m *methods) Len(d *Data, args ...interface{}) error {
 	if !ok {
 		return fmt.Errorf("验证规则错误: 参数数量必须是integer类型")
 	}
-	rsErr := getMessageError(lang.Len, d.message, d.GetNotes(), dataLen)
-	// 如果是文件则验证
-	f := d.handle.fileMap[d.fullField]
-	if f != nil {
+	if f, err := d.getFile(); err == nil {
 		if int(f.Size/1024) == dataLen {
 			return nil
 		}
-		return rsErr
+		return validError(lang.Len, d.getMessage(), langArg{
+			notes: d.GetNotes(),
+			len:   dataLen,
+		})
 	}
 	validData := d.GetValidData()
 	switch validData.(type) {
@@ -33,7 +33,10 @@ func (m *methods) Len(d *Data, args ...interface{}) error {
 			return nil
 		}
 	}
-	return rsErr
+	return validError(lang.Len, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+		len:   dataLen,
+	})
 }
 
 func (m *methods) Min(d *Data, args ...interface{}) error {
@@ -44,14 +47,14 @@ func (m *methods) Min(d *Data, args ...interface{}) error {
 	if !ok {
 		return fmt.Errorf("验证规则错误: 参数数量必须是integer类型")
 	}
-	rsErr := getMessageError(lang.Min, d.message, d.GetNotes(), dataLen)
-	// 如果是文件则验证
-	f := d.handle.fileMap[d.fullField]
-	if f != nil {
+	if f, err := d.getFile(); err == nil {
 		if int(f.Size/1024) >= dataLen {
 			return nil
 		}
-		return rsErr
+		return validError(lang.Min, d.getMessage(), langArg{
+			notes: d.GetNotes(),
+			len:   dataLen,
+		})
 	}
 	validData := d.GetValidData()
 	switch validData.(type) {
@@ -64,7 +67,10 @@ func (m *methods) Min(d *Data, args ...interface{}) error {
 			return nil
 		}
 	}
-	return rsErr
+	return validError(lang.Min, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+		len:   dataLen,
+	})
 }
 
 func (m *methods) Max(d *Data, args ...interface{}) error {
@@ -75,14 +81,14 @@ func (m *methods) Max(d *Data, args ...interface{}) error {
 	if !ok {
 		return fmt.Errorf("验证规则错误: 参数数量必须是integer类型")
 	}
-	rsErr := getMessageError(lang.Max, d.message, d.GetNotes(), dataLen)
-	// 如果是文件则验证
-	f := d.handle.fileMap[d.fullField]
-	if f != nil {
+	if f, err := d.getFile(); err == nil {
 		if int(f.Size/1024) <= dataLen {
 			return nil
 		}
-		return rsErr
+		return validError(lang.Max, d.getMessage(), langArg{
+			notes: d.GetNotes(),
+			len:   dataLen,
+		})
 	}
 	validData := d.GetValidData()
 	switch validData.(type) {
@@ -95,5 +101,8 @@ func (m *methods) Max(d *Data, args ...interface{}) error {
 			return nil
 		}
 	}
-	return rsErr
+	return validError(lang.Max, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+		len:   dataLen,
+	})
 }

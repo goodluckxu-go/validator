@@ -28,6 +28,6 @@ func (v *Valid) SetRules(rules []Rule) (va *Valid) {
 // SetMessages 设置消息
 func (v *Valid) SetMessages(messages []Message) (va *Valid) {
 	va = v.getInstance()
-	va.storage.messages = messages
+	va.storage.messages = append(va.storage.messages, messages...)
 	return
 }

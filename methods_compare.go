@@ -10,20 +10,21 @@ func (m *methods) Eq(d *Data, args ...interface{}) error {
 	}
 	val := args[0]
 	validData := d.GetValidData()
-	validNotes := d.GetNotes()
 	if field, ok := val.(param.Field); ok {
 		for _, vMap := range d.GetLevelData(string(field)) {
 			if !isEqualData(validData, vMap.Data) {
-				compare := d.handle.notesMap[vMap.FullPk]
-				if compare == "" {
-					compare = vMap.FullPk
-				}
-				return getMessageError(lang.Eq, d.message, validNotes, compare)
+				return validError(lang.Eq, d.getMessage(), langArg{
+					notes:   d.GetNotes(),
+					compare: d.GetNotesByPath(vMap.FullPk),
+				})
 			}
 		}
 	} else {
 		if !isEqualData(validData, val) {
-			return getMessageError(lang.Eq, d.message, validNotes, val)
+			return validError(lang.Eq, d.getMessage(), langArg{
+				notes:   d.GetNotes(),
+				compare: val,
+			})
 		}
 	}
 	return nil
@@ -35,7 +36,6 @@ func (m *methods) Gt(d *Data, args ...interface{}) error {
 	}
 	val := args[0]
 	validData := d.GetValidData()
-	validNotes := d.GetNotes()
 	if field, ok := val.(param.Field); ok {
 		for _, vMap := range d.GetLevelData(string(field)) {
 			compareData, err := isCompareData(validData, vMap.Data)
@@ -43,11 +43,10 @@ func (m *methods) Gt(d *Data, args ...interface{}) error {
 				return err
 			}
 			if compareData != 1 {
-				compare := d.handle.notesMap[vMap.FullPk]
-				if compare == "" {
-					compare = vMap.FullPk
-				}
-				return getMessageError(lang.Gt, d.message, validNotes, compare)
+				return validError(lang.Gt, d.getMessage(), langArg{
+					notes:   d.GetNotes(),
+					compare: d.GetNotesByPath(vMap.FullPk),
+				})
 			}
 		}
 	} else {
@@ -56,7 +55,10 @@ func (m *methods) Gt(d *Data, args ...interface{}) error {
 			return err
 		}
 		if compareData != 1 {
-			return getMessageError(lang.Gt, d.message, validNotes, val)
+			return validError(lang.Gt, d.getMessage(), langArg{
+				notes:   d.GetNotes(),
+				compare: val,
+			})
 		}
 	}
 	return nil
@@ -68,7 +70,6 @@ func (m *methods) Gte(d *Data, args ...interface{}) error {
 	}
 	val := args[0]
 	validData := d.GetValidData()
-	validNotes := d.GetNotes()
 	if field, ok := val.(param.Field); ok {
 		for _, vMap := range d.GetLevelData(string(field)) {
 			compareData, err := isCompareData(validData, vMap.Data)
@@ -76,11 +77,10 @@ func (m *methods) Gte(d *Data, args ...interface{}) error {
 				return err
 			}
 			if compareData == -1 {
-				compare := d.handle.notesMap[vMap.FullPk]
-				if compare == "" {
-					compare = vMap.FullPk
-				}
-				return getMessageError(lang.Gte, d.message, validNotes, compare)
+				return validError(lang.Gte, d.getMessage(), langArg{
+					notes:   d.GetNotes(),
+					compare: d.GetNotesByPath(vMap.FullPk),
+				})
 			}
 		}
 	} else {
@@ -89,7 +89,10 @@ func (m *methods) Gte(d *Data, args ...interface{}) error {
 			return err
 		}
 		if compareData == -1 {
-			return getMessageError(lang.Gte, d.message, validNotes, val)
+			return validError(lang.Gte, d.getMessage(), langArg{
+				notes:   d.GetNotes(),
+				compare: val,
+			})
 		}
 	}
 	return nil
@@ -101,7 +104,6 @@ func (m *methods) Lt(d *Data, args ...interface{}) error {
 	}
 	val := args[0]
 	validData := d.GetValidData()
-	validNotes := d.GetNotes()
 	if field, ok := val.(param.Field); ok {
 		for _, vMap := range d.GetLevelData(string(field)) {
 			compareData, err := isCompareData(validData, vMap.Data)
@@ -109,11 +111,10 @@ func (m *methods) Lt(d *Data, args ...interface{}) error {
 				return err
 			}
 			if compareData != -1 {
-				compare := d.handle.notesMap[vMap.FullPk]
-				if compare == "" {
-					compare = vMap.FullPk
-				}
-				return getMessageError(lang.Lt, d.message, validNotes, compare)
+				return validError(lang.Lt, d.getMessage(), langArg{
+					notes:   d.GetNotes(),
+					compare: d.GetNotesByPath(vMap.FullPk),
+				})
 			}
 		}
 	} else {
@@ -122,7 +123,10 @@ func (m *methods) Lt(d *Data, args ...interface{}) error {
 			return err
 		}
 		if compareData != -1 {
-			return getMessageError(lang.Lt, d.message, validNotes, val)
+			return validError(lang.Lt, d.getMessage(), langArg{
+				notes:   d.GetNotes(),
+				compare: val,
+			})
 		}
 	}
 	return nil
@@ -134,7 +138,6 @@ func (m *methods) Lte(d *Data, args ...interface{}) error {
 	}
 	val := args[0]
 	validData := d.GetValidData()
-	validNotes := d.GetNotes()
 	if field, ok := val.(param.Field); ok {
 		for _, vMap := range d.GetLevelData(string(field)) {
 			compareData, err := isCompareData(validData, vMap.Data)
@@ -142,11 +145,10 @@ func (m *methods) Lte(d *Data, args ...interface{}) error {
 				return err
 			}
 			if compareData == 1 {
-				compare := d.handle.notesMap[vMap.FullPk]
-				if compare == "" {
-					compare = vMap.FullPk
-				}
-				return getMessageError(lang.Lte, d.message, validNotes, compare)
+				return validError(lang.Lte, d.getMessage(), langArg{
+					notes:   d.GetNotes(),
+					compare: d.GetNotesByPath(vMap.FullPk),
+				})
 			}
 		}
 	} else {
@@ -155,7 +157,10 @@ func (m *methods) Lte(d *Data, args ...interface{}) error {
 			return err
 		}
 		if compareData == 1 {
-			return getMessageError(lang.Lte, d.message, validNotes, val)
+			return validError(lang.Lte, d.getMessage(), langArg{
+				notes:   d.GetNotes(),
+				compare: val,
+			})
 		}
 	}
 	return nil

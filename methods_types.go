@@ -1,14 +1,11 @@
 package validator
 
-import (
-	"strconv"
-)
+import "strconv"
 
 func (m *methods) Array(d *Data, args ...interface{}) error {
 	if err := validArgs(args, 0, 0); err != nil {
 		return err
 	}
-	rsErr := getMessageError(lang.Array, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {
 		return nil
@@ -16,14 +13,15 @@ func (m *methods) Array(d *Data, args ...interface{}) error {
 	if _, ok := validData.([]interface{}); ok {
 		return nil
 	}
-	return rsErr
+	return validError(lang.Array, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+	})
 }
 
 func (m *methods) Map(d *Data, args ...interface{}) error {
 	if err := validArgs(args, 0, 0); err != nil {
 		return err
 	}
-	rsErr := getMessageError(lang.Map, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {
 		return nil
@@ -31,13 +29,14 @@ func (m *methods) Map(d *Data, args ...interface{}) error {
 	if _, ok := validData.(map[string]interface{}); ok {
 		return nil
 	}
-	return rsErr
+	return validError(lang.Map, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+	})
 }
 func (m *methods) String(d *Data, args ...interface{}) error {
 	if err := validArgs(args, 0, 0); err != nil {
 		return err
 	}
-	rsErr := getMessageError(lang.String, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {
 		return nil
@@ -45,13 +44,14 @@ func (m *methods) String(d *Data, args ...interface{}) error {
 	if _, ok := validData.(string); ok {
 		return nil
 	}
-	return rsErr
+	return validError(lang.String, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+	})
 }
 func (m *methods) Number(d *Data, args ...interface{}) error {
 	if err := validArgs(args, 0, 0); err != nil {
 		return err
 	}
-	rsErr := getMessageError(lang.Number, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {
 		return nil
@@ -61,18 +61,19 @@ func (m *methods) Number(d *Data, args ...interface{}) error {
 		return nil
 	case string:
 		if number, err := strconv.ParseFloat(validData.(string), 64); err == nil {
-			d.setValidData(number)
+			d.SetValidData(number)
 			return nil
 		}
 	}
-	return rsErr
+	return validError(lang.Number, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+	})
 }
 
 func (m *methods) Integer(d *Data, args ...interface{}) error {
 	if err := validArgs(args, 0, 0); err != nil {
 		return err
 	}
-	rsErr := getMessageError(lang.Integer, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {
 		return nil
@@ -81,25 +82,26 @@ func (m *methods) Integer(d *Data, args ...interface{}) error {
 	case float64:
 		validDataInt := int64(validData.(float64))
 		if validData.(float64) == float64(validDataInt) {
-			d.setValidData(validDataInt)
+			d.SetValidData(validDataInt)
 			return nil
 		}
 	case string:
 		if number, err := strconv.ParseFloat(validData.(string), 64); err == nil {
 			if number == float64(int64(number)) {
-				d.setValidData(int64(number))
+				d.SetValidData(int64(number))
 				return nil
 			}
 		}
 	}
-	return rsErr
+	return validError(lang.Integer, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+	})
 }
 
 func (m *methods) Bool(d *Data, args ...interface{}) error {
 	if err := validArgs(args, 0, 0); err != nil {
 		return err
 	}
-	rsErr := getMessageError(lang.Bool, d.message, d.GetNotes())
 	validData := d.GetValidData()
 	if validData == nil {
 		return nil
@@ -107,14 +109,18 @@ func (m *methods) Bool(d *Data, args ...interface{}) error {
 	if _, ok := validData.(bool); ok {
 		return nil
 	}
-	return rsErr
+	return validError(lang.Bool, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+	})
 }
 
 func (m *methods) Date(d *Data, args ...interface{}) error {
 	if err := validArgs(args, 0, 1); err != nil {
 		return err
 	}
-	rsErr := getMessageError(lang.Date, d.message, d.GetNotes())
+	rsErr := validError(lang.Date, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+	})
 	dateString, ok := d.GetValidData().(string)
 	if !ok {
 		return rsErr
@@ -136,9 +142,10 @@ func (m *methods) File(d *Data, args ...interface{}) error {
 	if err := validArgs(args, 0, 1); err != nil {
 		return err
 	}
-	rsErr := getMessageError(lang.File, d.message, d.GetNotes())
-	if d.handle.fileMap[d.fullField] == nil {
-		return rsErr
+	if _, err := d.getFile(); err != nil {
+		return validError(lang.File, d.getMessage(), langArg{
+			notes: d.GetNotes(),
+		})
 	}
 	return nil
 }

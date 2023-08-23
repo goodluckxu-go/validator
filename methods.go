@@ -18,9 +18,11 @@ func (m *methods) Required(d *Data, args ...interface{}) error {
 	if len(args) > 0 {
 		fType, _ = args[0].(string)
 	}
-	rsErr := getMessageError(lang.Required, d.message, d.GetNotes())
+	rsErr := validError(lang.Required, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+	})
 	// 先验证是否为文件
-	if d.handle.fileMap[d.fullField] != nil {
+	if _, err := d.getFile(); err == nil {
 		return nil
 	}
 	validData := d.GetValidData()
@@ -63,7 +65,7 @@ func (m *methods) ValidCondition(d *Data, args ...interface{}) error {
 	if !bl {
 		return d.JumpValid()
 	}
-	return d.NextValid()
+	return nil
 }
 
 func (m *methods) Nullable(d *Data, args ...interface{}) error {
@@ -101,7 +103,7 @@ func (m *methods) Nullable(d *Data, args ...interface{}) error {
 	if isNull {
 		return d.JumpValid()
 	}
-	return d.NextValid()
+	return nil
 }
 
 func (m *methods) In(d *Data, args ...interface{}) error {
@@ -127,7 +129,10 @@ func (m *methods) In(d *Data, args ...interface{}) error {
 			}
 		}
 	}
-	return getMessageError(lang.In, d.message, d.GetNotes(), fmt.Sprintf("%v", args[0]))
+	return validError(lang.In, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+		array: args[0],
+	})
 }
 
 func (m *methods) NotIn(d *Data, args ...interface{}) error {
@@ -145,11 +150,17 @@ func (m *methods) NotIn(d *Data, args ...interface{}) error {
 		switch child.(type) {
 		case string:
 			if fmt.Sprintf("%v", validData) == child.(string) {
-				return getMessageError(lang.NotIn, d.message, d.GetNotes(), fmt.Sprintf("%v", args[0]))
+				return validError(lang.NotIn, d.getMessage(), langArg{
+					notes: d.GetNotes(),
+					array: args[0],
+				})
 			}
 		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64:
 			if interfaceToFloat64(validData) == interfaceToFloat64(child) {
-				return getMessageError(lang.NotIn, d.message, d.GetNotes(), fmt.Sprintf("%v", args[0]))
+				return validError(lang.NotIn, d.getMessage(), langArg{
+					notes: d.GetNotes(),
+					array: args[0],
+				})
 			}
 		}
 	}
@@ -164,7 +175,9 @@ func (m *methods) Email(d *Data, args ...interface{}) error {
 	if reg.MatchString(fmt.Sprintf("%v", d.GetValidData())) {
 		return nil
 	}
-	return getMessageError(lang.Email, d.message, d.GetNotes())
+	return validError(lang.Email, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+	})
 }
 
 func (m *methods) Phone(d *Data, args ...interface{}) error {
@@ -175,44 +188,34 @@ func (m *methods) Phone(d *Data, args ...interface{}) error {
 	if reg.MatchString(fmt.Sprintf("%v", d.GetValidData())) {
 		return nil
 	}
-	return getMessageError(lang.Phone, d.message, d.GetNotes())
+	return validError(lang.Phone, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+	})
 }
 
 func (m *methods) Unique(d *Data, args ...interface{}) error {
 	if err := validArgs(args, 0, 0); err != nil {
 		return err
 	}
-	pkList := strings.Split(d.pk, ".")
+	validData := d.getValidData()
+	pkList := strings.Split(validData.samePaths[len(validData.samePaths)-1], ".")
 	lastStarIndex := 0
-	for k, v := range pkList {
-		if v == "*" {
-			lastStarIndex = k
+	for i := len(pkList) - 1; i >= 0; i-- {
+		if pkList[i] == "*" {
+			lastStarIndex = i
+			break
 		}
 	}
-	fullList := strings.Split(d.fullField, ".")
+	fullList := strings.Split(d.path, ".")
 	newList := append(fullList[0:lastStarIndex], pkList[lastStarIndex:]...)
 	var data interface{}
-	for k, v := range d.handle.ruleData {
-		kList := strings.Split(k, ".")
-		isEq := true
-		for i, n := range newList {
-			if len(kList) <= i {
-				isEq = false
-				break
-			}
-			if n == "*" || kList[i] == n {
-				continue
-			}
-			isEq = false
-		}
-		if isEq {
-			if data == nil {
-				data = v.data
-			} else {
-				if data == v.data {
-					return getMessageError(lang.Unique, d.message, d.GetNotes())
-				}
-			}
+	for _, v := range d.GetData(strings.Join(newList, ".")) {
+		if data == nil {
+			data = v.Data
+		} else if data == v.Data {
+			return validError(lang.Unique, d.getMessage(), langArg{
+				notes: d.GetNotes(),
+			})
 		}
 	}
 	return nil
@@ -226,7 +229,9 @@ func (m *methods) Regexp(d *Data, args ...interface{}) error {
 	if reg.MatchString(fmt.Sprintf("%v", d.GetValidData())) {
 		return nil
 	}
-	return getMessageError(lang.Regexp, d.message, d.GetNotes())
+	return validError(lang.Regexp, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+	})
 }
 
 func (m *methods) NotRegexp(d *Data, args ...interface{}) error {
@@ -237,5 +242,7 @@ func (m *methods) NotRegexp(d *Data, args ...interface{}) error {
 	if !reg.MatchString(fmt.Sprintf("%v", d.GetValidData())) {
 		return nil
 	}
-	return getMessageError(lang.NotRegexp, d.message, d.GetNotes())
+	return validError(lang.NotRegexp, d.getMessage(), langArg{
+		notes: d.GetNotes(),
+	})
 }

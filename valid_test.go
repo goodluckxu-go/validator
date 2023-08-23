@@ -126,6 +126,7 @@ func getRules() []Rule {
 		), Notes: "商品信息"},
 		{Field: "goods.*.id", Methods: Method.List(
 			Method.SetMethod("required"),
+			Method.SetMethod("unique"),
 			Method.SetMethod("integer"),
 			Method.SetMethod("gt", 0),
 		)},
@@ -184,6 +185,8 @@ func TestValid_Valid(t *testing.T) {
 		SetRules(getRules()).
 		SetMessages([]Message{
 			{"goods.*.type.required", "商品的类型必须传入"},
+			{"goods.*.explan.nullable", "商品的类型必须传入1"},
+			{"goods.2.explan.nullable", "商品的类型必须传入2"},
 		}).
 		Valid()
 	if v.Error != nil {

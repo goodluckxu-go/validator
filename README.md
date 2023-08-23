@@ -1,5 +1,15 @@
 # go版本的validator通用验证器
 
+## 修改日志
+2023-08-23
+~~~
+性能优化
+~~~
+改版前
+![](./改版前.png)
+改版后
+![](./改版后.png)
+
 ## 用法(usage)
 
 <span style="color:red;">注意：</span>
@@ -123,12 +133,14 @@ valid := validator.New().
 例如：当期验证数据list.0.a.a，传入list.*.a.b，获取数据则为list.0.a.b数据切片
 #### GetValidData() interface{}
 获取验证数据
+#### SetValidData(value interface{})
+设置验证数据
 #### GetNotes() string
 获取注释
+#### GetNotesByPath(path string) string
+通过path路径获取注释
 #### func (d *Data) JumpValid() error
 跳过当前字段的验证
-#### func (d *Data) NextValid() error
-执行下一条验证
 
 ## 返回错误信息(callback)
 valid.Error
