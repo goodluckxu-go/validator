@@ -18,37 +18,46 @@ func (m *methods) Required(d *Data, args ...interface{}) error {
 	if len(args) > 0 {
 		fType, _ = args[0].(string)
 	}
-	rsErr := validError(lang.Required, d.getMessage(), langArg{
-		notes: d.GetNotes(),
-	})
 	// 先验证是否为文件
 	if _, err := d.getFile(); err == nil {
 		return nil
 	}
 	validData := d.GetValidData()
 	if validData == nil {
-		return rsErr
+		return validError(lang.Required, d.getMessage(), langArg{
+			notes: d.GetNotes(),
+		})
 	}
 	switch validData.(type) {
 	case string:
 		if validData.(string) == "" && fType != "string" {
-			return rsErr
+			return validError(lang.Required, d.getMessage(), langArg{
+				notes: d.GetNotes(),
+			})
 		}
 	case float64:
 		if validData.(float64) == 0 && fType != "number" {
-			return rsErr
+			return validError(lang.Required, d.getMessage(), langArg{
+				notes: d.GetNotes(),
+			})
 		}
 	case bool:
 		if validData.(bool) == false && fType != "bool" {
-			return rsErr
+			return validError(lang.Required, d.getMessage(), langArg{
+				notes: d.GetNotes(),
+			})
 		}
 	case []interface{}:
 		if len(validData.([]interface{})) == 0 && fType != "array" {
-			return rsErr
+			return validError(lang.Required, d.getMessage(), langArg{
+				notes: d.GetNotes(),
+			})
 		}
 	case map[string]interface{}:
 		if len(validData.(map[string]interface{})) == 0 && fType != "map" {
-			return rsErr
+			return validError(lang.Required, d.getMessage(), langArg{
+				notes: d.GetNotes(),
+			})
 		}
 	}
 	return nil
