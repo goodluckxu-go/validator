@@ -148,6 +148,8 @@ valid := validator.New().
 通过path路径获取注释
 #### func (d *Data) JumpValid() error
 跳过当前字段的验证
+#### func (d *Data) JumpChild() error {
+跳过子集验证
 
 ## 返回错误信息(callback)
 valid.Error
