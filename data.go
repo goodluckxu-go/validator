@@ -97,6 +97,11 @@ func (d *Data) JumpValid() error {
 	return errors.New(jumpValid)
 }
 
+// JumpChild 跳过子集验证
+func (d *Data) JumpChild() error {
+	return errors.New(jumpChild)
+}
+
 func (d *Data) getFile() (f *file, err error) {
 	if (*d.fileMapPtr)[d.path] == nil {
 		return nil, errors.New("非文件类型")

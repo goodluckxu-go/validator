@@ -153,10 +153,16 @@ func (v *Valid) parseRule(rules []Rule, data interface{}) error {
 // validRule 验证规则
 func (v *Valid) validRule(data *interface{}) (err error) {
 	for _, ruleOnce := range v.handle.ruleRowList {
+		if index, ok := v.handle.pathIndex[ruleOnce.prefix]; ok {
+			parent := v.handle.ruleRowList[index]
+			if parent.jumpChild {
+				v.handle.ruleRowList[v.handle.pathIndex[ruleOnce.path]].jumpChild = true
+				return
+			}
+		}
 		// 验证数据
-		validNum := 0
+		isJumpChild := false
 		for _, m := range ruleOnce.methods {
-			validNum++
 			if ruleOnce.notes == "" {
 				ruleOnce.notes = ruleOnce.path
 			}
@@ -199,10 +205,15 @@ func (v *Valid) validRule(data *interface{}) (err error) {
 				err = nil
 				break
 			}
+			if err.Error() == jumpChild {
+				err = nil
+				isJumpChild = true
+				break
+			}
 			return
 		}
-		if len(ruleOnce.methods) == validNum {
-			v.handle.ruleRowList[v.handle.pathIndex[ruleOnce.path]].isValid = true
+		if isJumpChild {
+			v.handle.ruleRowList[v.handle.pathIndex[ruleOnce.path]].jumpChild = true
 		}
 	}
 	return

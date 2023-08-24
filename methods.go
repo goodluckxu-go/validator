@@ -101,7 +101,7 @@ func (m *methods) Nullable(d *Data, args ...interface{}) error {
 		}
 	}
 	if isNull {
-		return d.JumpValid()
+		return d.JumpChild()
 	}
 	return nil
 }

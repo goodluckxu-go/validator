@@ -4,6 +4,7 @@ import "net/http"
 
 const (
 	jumpValid string = "<**>.###(BREAK)###.<**>" // 跳过该字段所有验证
+	jumpChild string = "<**>.###(CHILD)###.<**>" // 跳过子集验证
 )
 
 var (
@@ -84,18 +85,19 @@ type langArg struct {
 // 规则和数据对应的单条规则
 type ruleRow struct {
 	path      string       // 路径
+	prefix    string       // 前缀
 	data      interface{}  // 数据
 	notes     string       // 字段注释
 	methods   []methodData // 验证规则方法
-	isValid   bool         // 是否验证
-	samePaths []string
+	jumpChild bool         // 是否跳过子集验证
+	samePaths []string     // 相似的路径
 }
 
 // Rule 单个规则
 type Rule struct {
 	prefix       string      // 临时前缀
 	data         interface{} // 临时数据
-	samePrefixes []string
+	samePrefixes []string    // 临时相似前缀
 	Field        string
 	Methods      []*method
 	Notes        string

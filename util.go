@@ -60,6 +60,7 @@ func disintegrateRules(rules []Rule, data interface{}, init bool) (rs []ruleRow,
 					})
 					rs = append(rs, ruleRow{
 						path:      path,
+						prefix:    rule.prefix,
 						notes:     rule.Notes,
 						methods:   ruleMethods,
 						samePaths: samePaths,
@@ -72,6 +73,7 @@ func disintegrateRules(rules []Rule, data interface{}, init bool) (rs []ruleRow,
 						})
 						rs = append(rs, ruleRow{
 							path:      path,
+							prefix:    rule.prefix,
 							data:      v,
 							notes:     rule.Notes,
 							methods:   ruleMethods,
@@ -92,6 +94,7 @@ func disintegrateRules(rules []Rule, data interface{}, init bool) (rs []ruleRow,
 				dataMap, _ := data.(map[string]interface{})
 				rs = append(rs, ruleRow{
 					path:      path,
+					prefix:    rule.prefix,
 					data:      dataMap[fieldList[0]],
 					notes:     rule.Notes,
 					methods:   ruleMethods,
@@ -172,10 +175,10 @@ func disintegrateRules(rules []Rule, data interface{}, init bool) (rs []ruleRow,
 // 规则排序
 func ruleRowSort(list []ruleRow) (rs []ruleRow, pathIndex map[string]int) {
 	rs = append(rs, list[0])
-	list = list[1:]
 	pathIndex = map[string]int{
 		list[0].path: 0,
 	}
+	list = list[1:]
 	for {
 		isAdd := false
 		for i := len(rs) - 1; i >= 0; i-- {
