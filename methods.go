@@ -217,15 +217,17 @@ func (m *methods) Unique(d *Data, args ...interface{}) error {
 	}
 	fullList := strings.Split(d.path, ".")
 	newList := append(fullList[0:lastStarIndex], pkList[lastStarIndex:]...)
-	var data interface{}
+	var list []interface{}
 	for _, v := range d.GetData(strings.Join(newList, ".")) {
-		if data == nil {
-			data = v.Data
-		} else if data == v.Data {
+		if v.FullPk == d.path {
+			break
+		}
+		if inArray(v.Data, list) {
 			return validError(lang.Unique, d.getMessage(), langArg{
 				notes: d.GetNotes(),
 			})
 		}
+		list = append(list, v.Data)
 	}
 	return nil
 }

@@ -30,7 +30,8 @@ func readBody(r *http.Request) []byte {
 }
 
 // 将规则和数据处理成单条
-func disintegrateRules(rules []Rule, data interface{}, init bool) (rs []ruleRow, err error) {
+func disintegrateRules(rules []Rule, data interface{}, init bool) (rsList [][]ruleRow, err error) {
+	var rs []ruleRow
 	notData := "0"
 	var otherRules []Rule
 	boolMap := map[string]interface{}{} // 是否时map类型
@@ -161,63 +162,41 @@ func disintegrateRules(rules []Rule, data interface{}, init bool) (rs []ruleRow,
 			})
 		}
 	}
+	rsList = append(rsList, rs)
 	if len(otherRules) > 0 {
 		if childRs, er := disintegrateRules(otherRules, nil, false); er != nil {
 			err = er
 			return
 		} else {
-			rs = append(rs, childRs...)
+			rsList = append(rsList, childRs...)
 		}
 	}
 	return
 }
 
-// 规则排序
-func ruleRowSort(list []ruleRow) (rs []ruleRow, pathIndex map[string]int) {
-	if len(list) == 0 {
-		return
-	}
-	rs = append(rs, list[0])
-	pathIndex = map[string]int{
-		list[0].path: 0,
-	}
-	list = list[1:]
-	for {
-		isAdd := false
-		for i := len(rs) - 1; i >= 0; i-- {
-			v := rs[i]
-			for k, v1 := range list {
-				if strings.Index(v1.path, v.path) != -1 {
-					rs = append(rs, v1)
-					pathIndex[v1.path] = len(rs) - 1
-					isAdd = true
-					if k == 0 {
-						list = list[1:]
-					} else {
-						list = append(list[:k], list[k+1:]...)
-					}
-					if len(list) == 0 {
-						return
-					}
-					break
+func ruleRowSort(list [][]ruleRow) (rs []ruleRow, pathIndex map[string]int) {
+	for k, rowDataList := range list {
+		if k == 0 {
+			rs = rowDataList
+			continue
+		} else if k+1 > len(list) {
+			break
+		}
+		var newRs []ruleRow
+		pathIndex = map[string]int{}
+		for _, row := range rs {
+			newRs = append(newRs, row)
+			pathIndex[row.path] = len(newRs) - 1
+			for _, rowChild := range list[k] {
+				if row.path == rowChild.prefix {
+					newRs = append(newRs, rowChild)
+					pathIndex[rowChild.path] = len(newRs) - 1
 				}
 			}
-			if isAdd {
-				break
-			}
 		}
-		if !isAdd {
-			if len(list) == 0 {
-				return
-			}
-			rs = append(rs, list[0])
-			pathIndex[list[0].path] = len(rs) - 1
-			list = list[1:]
-			if len(list) == 0 {
-				return
-			}
-		}
+		rs = newRs
 	}
+	return
 }
 
 func isSlice(prefix string) bool {
