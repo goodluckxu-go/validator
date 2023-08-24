@@ -5,6 +5,7 @@ import "net/http"
 const (
 	jumpValid string = "<**>.###(BREAK)###.<**>" // 跳过该字段所有验证
 	jumpChild string = "<**>.###(CHILD)###.<**>" // 跳过子集验证
+	noPrefix  string = "no prefix"               // 不存在前缀
 )
 
 var (

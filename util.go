@@ -43,6 +43,16 @@ func disintegrateRules(rules []Rule, data interface{}, init bool) (rsList [][]ru
 		for _, ruleMethod := range rule.Methods {
 			ruleMethods = append(ruleMethods, ruleMethod.methods...)
 		}
+		if rule.Field == "" {
+			rsList = append(rsList, []ruleRow{{
+				path:    rule.Field,
+				prefix:  noPrefix,
+				data:    data,
+				notes:   rule.Notes,
+				methods: ruleMethods,
+			}})
+			continue
+		}
 		fieldList := strings.Split(rule.Field, ".")
 		if len(fieldList) == 1 {
 			// 等于1时存在规则添加规则数据
@@ -175,8 +185,16 @@ func disintegrateRules(rules []Rule, data interface{}, init bool) (rsList [][]ru
 }
 
 func ruleRowSort(list [][]ruleRow) (rs []ruleRow, pathIndex map[string]int) {
+	if len(list) > 0 && len(list[0]) == 0 {
+		list = list[1:]
+	}
 	for k, rowDataList := range list {
 		if k == 0 {
+			pathIndex = map[string]int{}
+			for index, row := range rowDataList {
+				pathIndex[row.path] = index
+				rowDataList[index].prefix = noPrefix
+			}
 			rs = rowDataList
 			continue
 		} else if k+1 > len(list) {
@@ -187,7 +205,7 @@ func ruleRowSort(list [][]ruleRow) (rs []ruleRow, pathIndex map[string]int) {
 		for _, row := range rs {
 			newRs = append(newRs, row)
 			pathIndex[row.path] = len(newRs) - 1
-			for _, rowChild := range list[k] {
+			for _, rowChild := range rowDataList {
 				if row.path == rowChild.prefix {
 					newRs = append(newRs, rowChild)
 					pathIndex[rowChild.path] = len(newRs) - 1
