@@ -174,6 +174,9 @@ func disintegrateRules(rules []Rule, data interface{}, init bool) (rs []ruleRow,
 
 // 规则排序
 func ruleRowSort(list []ruleRow) (rs []ruleRow, pathIndex map[string]int) {
+	if len(list) == 0 {
+		return
+	}
 	rs = append(rs, list[0])
 	pathIndex = map[string]int{
 		list[0].path: 0,
@@ -204,6 +207,9 @@ func ruleRowSort(list []ruleRow) (rs []ruleRow, pathIndex map[string]int) {
 			}
 		}
 		if !isAdd {
+			if len(list) == 0 {
+				return
+			}
 			rs = append(rs, list[0])
 			pathIndex[list[0].path] = len(rs) - 1
 			list = list[1:]
