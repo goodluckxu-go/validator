@@ -63,7 +63,7 @@ func (m *methods) ValidCondition(d *Data, args ...interface{}) error {
 		return err
 	}
 	if !bl {
-		return d.JumpValid()
+		return d.JumpChild()
 	}
 	return nil
 }
