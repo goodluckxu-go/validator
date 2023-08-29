@@ -4,8 +4,7 @@
 ### 2023-08-23
 ~~~
 1. 性能优化
-2. 增加 SetValidData(value interface{}) 方法可重新设置验证数据
-3. 删除 func (d *Data) NextValid() error (注: 和直接返回nil相同)
+2. 删除 func (d *Data) NextValid() error (注: 和直接返回nil相同)
 ~~~
 改版前
 
@@ -139,7 +138,7 @@ valid := validator.New().
 
 例如：当期验证数据list.0.a.a，传入list.*.a.b，获取数据则为list.0.a.b数据切片
 #### GetValidData() interface{}
-获取验证数据
+获取验证数据(废弃)
 #### SetValidData(value interface{})
 设置验证数据
 #### GetNotes() string
