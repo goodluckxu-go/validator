@@ -138,8 +138,6 @@ valid := validator.New().
 
 例如：当期验证数据list.0.a.a，传入list.*.a.b，获取数据则为list.0.a.b数据切片
 #### GetValidData() interface{}
-获取验证数据(废弃)
-#### SetValidData(value interface{})
 设置验证数据
 #### GetNotes() string
 获取注释

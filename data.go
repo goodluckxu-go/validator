@@ -65,12 +65,6 @@ func (d *Data) GetValidData() interface{} {
 	return d.getValidData().data
 }
 
-// SetValidData 重设验证数据
-func (d *Data) SetValidData(value interface{}) {
-	(*d.ruleRowListPtr)[(*d.pathIndexPtr)[d.path]].data = value
-	*d.data = upData(*d.data, d.path, value)
-}
-
 // GetNotes 获取注释
 func (d *Data) GetNotes() string {
 	notes := d.getValidData().notes
@@ -125,4 +119,9 @@ func (d *Data) getMessage() string {
 
 func (d *Data) getValidData() ruleRow {
 	return (*d.ruleRowListPtr)[(*d.pathIndexPtr)[d.path]]
+}
+
+func (d *Data) setValidData(value interface{}) {
+	(*d.ruleRowListPtr)[(*d.pathIndexPtr)[d.path]].data = value
+	*d.data = upData(*d.data, d.path, value)
 }

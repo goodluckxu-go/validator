@@ -61,7 +61,7 @@ func (m *methods) Number(d *Data, args ...interface{}) error {
 		return nil
 	case string:
 		if number, err := strconv.ParseFloat(validData.(string), 64); err == nil {
-			d.SetValidData(number)
+			d.setValidData(number)
 			return nil
 		}
 	}
@@ -82,13 +82,13 @@ func (m *methods) Integer(d *Data, args ...interface{}) error {
 	case float64:
 		validDataInt := int64(validData.(float64))
 		if validData.(float64) == float64(validDataInt) {
-			d.SetValidData(validDataInt)
+			d.setValidData(validDataInt)
 			return nil
 		}
 	case string:
 		if number, err := strconv.ParseFloat(validData.(string), 64); err == nil {
 			if number == float64(int64(number)) {
-				d.SetValidData(int64(number))
+				d.setValidData(int64(number))
 				return nil
 			}
 		}
