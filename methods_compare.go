@@ -15,7 +15,7 @@ func (m *methods) Eq(d *Data, args ...interface{}) error {
 			if !isEqualData(validData, vMap.Data) {
 				return validError(lang.Eq, d.getMessage(), langArg{
 					notes:   d.GetNotes(),
-					compare: d.GetNotesByPath(vMap.FullPk),
+					compare: d.GetNotesByPath(vMap.Path),
 				})
 			}
 		}
@@ -45,7 +45,7 @@ func (m *methods) Gt(d *Data, args ...interface{}) error {
 			if compareData != 1 {
 				return validError(lang.Gt, d.getMessage(), langArg{
 					notes:   d.GetNotes(),
-					compare: d.GetNotesByPath(vMap.FullPk),
+					compare: d.GetNotesByPath(vMap.Path),
 				})
 			}
 		}
@@ -79,7 +79,7 @@ func (m *methods) Gte(d *Data, args ...interface{}) error {
 			if compareData == -1 {
 				return validError(lang.Gte, d.getMessage(), langArg{
 					notes:   d.GetNotes(),
-					compare: d.GetNotesByPath(vMap.FullPk),
+					compare: d.GetNotesByPath(vMap.Path),
 				})
 			}
 		}
@@ -113,7 +113,7 @@ func (m *methods) Lt(d *Data, args ...interface{}) error {
 			if compareData != -1 {
 				return validError(lang.Lt, d.getMessage(), langArg{
 					notes:   d.GetNotes(),
-					compare: d.GetNotesByPath(vMap.FullPk),
+					compare: d.GetNotesByPath(vMap.Path),
 				})
 			}
 		}
@@ -147,7 +147,7 @@ func (m *methods) Lte(d *Data, args ...interface{}) error {
 			if compareData == 1 {
 				return validError(lang.Lte, d.getMessage(), langArg{
 					notes:   d.GetNotes(),
-					compare: d.GetNotesByPath(vMap.FullPk),
+					compare: d.GetNotesByPath(vMap.Path),
 				})
 			}
 		}

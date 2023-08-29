@@ -26,8 +26,8 @@ func (d *Data) GetData(path string) (rs []DataOne) {
 	for _, v := range *d.ruleRowListPtr {
 		if inArrayString(path, v.samePaths) {
 			rs = append(rs, DataOne{
-				FullPk: v.path,
-				Data:   v.data,
+				Path: v.path,
+				Data: v.data,
 			})
 		}
 	}
@@ -52,8 +52,8 @@ func (d *Data) GetLevelData(path string) (rs []DataOne) {
 	for _, v := range *d.ruleRowListPtr {
 		if strings.Index(v.path, commonPath) != -1 && inArrayString(path, v.samePaths) {
 			rs = append(rs, DataOne{
-				FullPk: v.path,
-				Data:   v.data,
+				Path: v.path,
+				Data: v.data,
 			})
 		}
 	}

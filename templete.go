@@ -109,8 +109,8 @@ type Message [2]string
 
 // 单条数据
 type DataOne struct {
-	FullPk string
-	Data   interface{}
+	Path string
+	Data interface{}
 }
 
 // 是否过滤只获取验证参数

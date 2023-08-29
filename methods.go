@@ -219,7 +219,7 @@ func (m *methods) Unique(d *Data, args ...interface{}) error {
 	newList := append(fullList[0:lastStarIndex], pkList[lastStarIndex:]...)
 	var list []interface{}
 	for _, v := range d.GetData(strings.Join(newList, ".")) {
-		if v.FullPk == d.path {
+		if v.Path == d.path {
 			break
 		}
 		if inArray(v.Data, list) {

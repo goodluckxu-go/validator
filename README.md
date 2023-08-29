@@ -115,25 +115,25 @@ valid := validator.New().
 ### 方法
 #### GetAllData() interface{} 
 获取所有数据
-#### GetData(key string) []DataOne
+#### GetData(path string) []DataOne
 根据key获取数据
 
 例如：传 list.*.b. *.b ，获得
 ~~~json
 [
-    {"FullPk":"list.0.b.0.b","Data":6},
-    {"FullPk":"list.0.b.1.b","Data":7},
-    {"FullPk":"list.0.b.2.b","Data":8},
-    {"FullPk":"list.1.b.0.b","Data":16},
-    {"FullPk":"list.1.b.1.b","Data":17},
-    {"FullPk":"list.1.b.2.b","Data":18}
+    {"Path":"list.0.b.0.b","Data":6},
+    {"Path":"list.0.b.1.b","Data":7},
+    {"Path":"list.0.b.2.b","Data":8},
+    {"Path":"list.1.b.0.b","Data":16},
+    {"Path":"list.1.b.1.b","Data":17},
+    {"Path":"list.1.b.2.b","Data":18}
 ]
 ~~~
-#### GetCommonData(key string) interface{}
+#### GetCommonData(path string) interface{}
 获取两个值最近的公共数据
 
 例如：当期验证数据list.0.a.a，传入list.*.a.b，获取数据则为list.0.a对象
-#### GetLevelData(key string) []DataOne
+#### GetLevelData(path string) []DataOne
 获取和验证同一层级的数据集合
 
 例如：当期验证数据list.0.a.a，传入list.*.a.b，获取数据则为list.0.a.b数据切片
