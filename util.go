@@ -228,23 +228,28 @@ func isSlice(prefix string) bool {
 }
 
 func samesAdd(sames []string, adds [][]interface{}) (rs []string, now string) {
+	index := 0
 	if len(sames) == 0 {
+		rs = make([]string, len(adds))
 		for k, add := range adds {
 			ks := stringJoin("", ".", add...)
 			if k == 0 {
 				now = ks
 			}
-			rs = append(rs, ks)
+			rs[index] = ks
+			index++
 		}
 		return
 	}
+	rs = make([]string, len(sames)*len(adds))
 	for k, same := range sames {
 		for k1, add := range adds {
 			ks := stringJoin(same, ".", add...)
 			if k == 0 && k1 == 0 {
 				now = ks
 			}
-			rs = append(rs, ks)
+			rs[index] = ks
+			index++
 		}
 	}
 	return
