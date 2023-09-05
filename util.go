@@ -39,17 +39,13 @@ func disintegrateRules(rules []Rule, data interface{}, init bool) (rsList [][]ru
 		if !init {
 			data = rule.data
 		}
-		var ruleMethods []methodData
-		for _, ruleMethod := range rule.Methods {
-			ruleMethods = append(ruleMethods, ruleMethod.methods...)
-		}
 		if rule.Field == "" {
 			rsList = append(rsList, []ruleRow{{
 				path:    rule.Field,
 				prefix:  noPrefix,
 				data:    data,
 				notes:   rule.Notes,
-				methods: ruleMethods,
+				methods: rule.Methods,
 			}})
 			continue
 		}
@@ -73,7 +69,7 @@ func disintegrateRules(rules []Rule, data interface{}, init bool) (rsList [][]ru
 						path:      path,
 						prefix:    rule.prefix,
 						notes:     rule.Notes,
-						methods:   ruleMethods,
+						methods:   rule.Methods,
 						samePaths: samePaths,
 					})
 				} else {
@@ -87,7 +83,7 @@ func disintegrateRules(rules []Rule, data interface{}, init bool) (rsList [][]ru
 							prefix:    rule.prefix,
 							data:      v,
 							notes:     rule.Notes,
-							methods:   ruleMethods,
+							methods:   rule.Methods,
 							samePaths: samePaths,
 						})
 					}
@@ -108,7 +104,7 @@ func disintegrateRules(rules []Rule, data interface{}, init bool) (rsList [][]ru
 					prefix:    rule.prefix,
 					data:      dataMap[fieldList[0]],
 					notes:     rule.Notes,
-					methods:   ruleMethods,
+					methods:   rule.Methods,
 					samePaths: samePaths,
 				})
 			}

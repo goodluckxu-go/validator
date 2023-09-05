@@ -23,8 +23,12 @@ type methodData struct {
 	args   []interface{}
 }
 
-func (m *method) List(me ...*method) []*method {
-	return me
+func (m *method) List(me ...*method) []methodData {
+	var rs []methodData
+	for _, mm := range me {
+		rs = append(rs, mm.methods...)
+	}
+	return rs
 }
 
 // SetFun 设置自定义验证方法(其他参数可用于获取外部数据或者传地址修改外部数据)
@@ -100,7 +104,7 @@ type Rule struct {
 	data         interface{} // 临时数据
 	samePrefixes []string    // 临时相似前缀
 	Field        string
-	Methods      []*method
+	Methods      []methodData
 	Notes        string
 }
 
