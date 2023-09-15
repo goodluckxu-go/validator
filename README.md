@@ -2,10 +2,6 @@
 
 ## 修改日志(change log)
 ### 2023-08-23
-~~~
-1. 性能优化
-2. 删除 func (d *Data) NextValid() error (注: 和直接返回nil相同)
-~~~
 改版前
 
 ![](./改版前.png)
