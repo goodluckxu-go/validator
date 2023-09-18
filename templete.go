@@ -67,9 +67,9 @@ type storage struct {
 
 // 处理数据
 type handle struct {
-	fileMap     map[string]*file // 文件数据
-	ruleRowList []ruleRow        // 验证数据
-	pathIndex   map[string]int   // 验证数据索引
+	fileMap          map[string]*file // 文件数据
+	ruleTreeList     []ruleTree       // 规则树
+	validRulePtrList []*ruleTree      // 验证规则列表
 }
 
 // 文件
@@ -87,15 +87,19 @@ type langArg struct {
 	len     interface{} // 长度
 }
 
-// 规则和数据对应的单条规则
-type ruleRow struct {
-	path      string       // 路径
-	prefix    string       // 前缀
-	data      interface{}  // 数据
-	notes     string       // 字段注释
-	methods   []methodData // 验证规则方法
-	jumpChild bool         // 是否跳过子集验证
-	samePaths []string     // 相似的路径
+// 规则和数据对应的单条规则树
+type ruleTree struct {
+	path            string       // 路径
+	prefix          string       // 前缀
+	field           string       // 当前字段
+	index           int          // 索引
+	parentIndex     int          // 父级索引
+	firstChildIndex int          // 第一个孩子索引
+	lastChildIndex  int          // 最后一个孩子索引
+	data            interface{}  // 数据
+	notes           string       // 字段注释
+	methods         []methodData // 验证规则方法
+	jumpChild       bool         // 是否跳过子集验证
 }
 
 // Rule 单个规则

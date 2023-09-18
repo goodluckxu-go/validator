@@ -30,187 +30,239 @@ func readBody(r *http.Request) []byte {
 }
 
 // 将规则和数据处理成单条
-func disintegrateRules(rules []Rule, data interface{}, init bool) (rsList [][]ruleRow, err error) {
-	var rs []ruleRow
-	notData := "0"
+func disintegrateRules(rules []Rule, data interface{}, init bool, rsPtr *[]ruleTree, args ...interface{}) {
+	rs := *rsPtr
+	pathIndexMap := map[string]int{}
+	pathIndex := 0
+	if len(args) > 1 {
+		pathIndexMap, _ = args[0].(map[string]int)
+		pathIndex, _ = args[1].(int)
+	}
 	var otherRules []Rule
-	boolMap := map[string]interface{}{} // 是否时map类型
-	for _, rule := range rules {
+	n := len(rules)
+	sameBeforePrefix := ""
+	for index := 0; index < n; index++ {
+		rule := rules[index]
 		if !init {
 			data = rule.data
 		}
-		if rule.Field == "" {
-			rsList = append(rsList, []ruleRow{{
-				path:    rule.Field,
-				prefix:  noPrefix,
-				data:    data,
-				notes:   rule.Notes,
-				methods: rule.Methods,
-			}})
-			continue
+		path := ""
+		if _, ok := pathIndexMap[path]; !ok {
+			pathIndexMap[path] = pathIndex
+			pathIndex++
+			rs = append(rs, ruleTree{
+				path:        path,
+				prefix:      noPrefix,
+				data:        data,
+				index:       pathIndex - 1,
+				parentIndex: -1,
+			})
+		}
+		if rule.prefix == "" && rule.Field == "" {
+			rs[0].methods = rule.Methods
+			rs[0].notes = rule.Notes
 		}
 		fieldList := strings.Split(rule.Field, ".")
-		if len(fieldList) == 1 {
-			// 等于1时存在规则添加规则数据
-			if isSlice(fieldList[0]) {
-				if boolMap[rule.prefix] == nil {
-					boolMap[rule.prefix] = false
-				} else if boolMap[rule.prefix] == true {
-					err = fmt.Errorf("%s冲突，map和slice不能并存", rule.prefix)
-					return
+		if isSlice(fieldList[0]) {
+			// 数组
+			if sameBeforePrefix == rule.prefix {
+				continue
+			}
+			sameBeforePrefix = rule.prefix
+			jump := 0
+			for i := index; i < n; i++ {
+				newRule := rules[i]
+				if newRule.prefix != sameBeforePrefix {
+					break
 				}
-				dataList, _ := data.([]interface{})
-				if len(dataList) == 0 {
-					samePaths, path := samesAdd(rule.samePrefixes, [][]interface{}{
-						{".", notData},
-						{".*"},
-					})
-					rs = append(rs, ruleRow{
-						path:      path,
-						prefix:    rule.prefix,
-						notes:     rule.Notes,
-						methods:   rule.Methods,
-						samePaths: samePaths,
-					})
-				} else {
-					for k, v := range dataList {
-						samePaths, path := samesAdd(rule.samePrefixes, [][]interface{}{
-							{".", k},
-							{".*"},
+				jump++
+			}
+			dataList, _ := data.([]interface{})
+			// 带*的变成0
+			if len(dataList) == 0 {
+				dataList = []interface{}{nil}
+			}
+			for k, v := range dataList {
+				for i := index; i < index+jump; i++ {
+					newRule := rules[i]
+					newFieldList := strings.Split(newRule.Field, ".")
+					if len(newFieldList) == 1 {
+						continue
+					}
+					if isSlice(newFieldList[1]) {
+						otherRules = append(otherRules, Rule{
+							Field:   strings.Join(newFieldList[1:], "."),
+							data:    v,
+							prefix:  fieldJoin(rule.prefix, k),
+							Methods: newRule.Methods,
+							Notes:   newRule.Notes,
 						})
-						rs = append(rs, ruleRow{
-							path:      path,
-							prefix:    rule.prefix,
-							data:      v,
-							notes:     rule.Notes,
-							methods:   rule.Methods,
-							samePaths: samePaths,
+					} else {
+						vMap, _ := v.(map[string]interface{})
+						otherRules = append(otherRules, Rule{
+							Field: strings.Join(newFieldList[1:], "."),
+							data: map[string]interface{}{
+								newFieldList[1]: vMap[newFieldList[1]],
+							},
+							prefix:  fieldJoin(rule.prefix, k),
+							Methods: newRule.Methods,
+							Notes:   newRule.Notes,
 						})
 					}
 				}
-			} else {
-				if boolMap[rule.prefix] == nil {
-					boolMap[rule.prefix] = true
-				} else if boolMap[rule.prefix] == false {
-					err = fmt.Errorf("%s冲突，map和slice不能并存", rule.prefix)
-					return
+				path = fieldJoin(rule.prefix, k)
+				pathIndexMap[path] = pathIndex
+				pathIndex++
+				parentIndex := -1
+				if tmp, ok := pathIndexMap[rule.prefix]; ok {
+					parentIndex = tmp
+					rsLen := len(rs)
+					if rs[parentIndex].firstChildIndex == 0 {
+						rs[parentIndex].firstChildIndex = rsLen
+					}
+					rs[parentIndex].lastChildIndex = rsLen
 				}
-				samePaths, path := samesAdd(rule.samePrefixes, [][]interface{}{
-					{".", fieldList[0]},
-				})
-				dataMap, _ := data.(map[string]interface{})
-				rs = append(rs, ruleRow{
-					path:      path,
-					prefix:    rule.prefix,
-					data:      dataMap[fieldList[0]],
-					notes:     rule.Notes,
-					methods:   rule.Methods,
-					samePaths: samePaths,
-				})
+				treeItem := ruleTree{
+					path:        path,
+					prefix:      rule.prefix,
+					field:       fieldJoin(k),
+					data:        v,
+					index:       pathIndex - 1,
+					parentIndex: parentIndex,
+				}
+				if len(fieldList) == 1 {
+					treeItem.methods = rule.Methods
+					treeItem.notes = rule.Notes
+				}
+				rs = append(rs, treeItem)
 			}
+			index += jump - 1
 			continue
-		}
-		// 不等于与需要组装otherRules递归
-		if isSlice(fieldList[0]) {
-			if boolMap[rule.prefix] == nil {
-				boolMap[rule.prefix] = false
-			} else if boolMap[rule.prefix] == true {
-				err = fmt.Errorf("%s冲突，map和slice不能并存", rule.prefix)
-				return
-			}
-			dataList, _ := data.([]interface{})
-			if len(dataList) == 0 {
-				samePrefixes, prefix := samesAdd(rule.samePrefixes, [][]interface{}{
-					{".", notData},
-					{".*"},
-				})
-				otherRules = append(otherRules, Rule{
-					prefix:       prefix,
-					Field:        strings.Join(fieldList[1:], "."),
-					Methods:      rule.Methods,
-					Notes:        rule.Notes,
-					samePrefixes: samePrefixes,
-				})
-			} else {
-				for k, v := range dataList {
-					samePrefixes, prefix := samesAdd(rule.samePrefixes, [][]interface{}{
-						{".", k},
-						{".*"},
-					})
-					otherRules = append(otherRules, Rule{
-						prefix:       prefix,
-						data:         v,
-						Field:        strings.Join(fieldList[1:], "."),
-						Methods:      rule.Methods,
-						Notes:        rule.Notes,
-						samePrefixes: samePrefixes,
-					})
-				}
-			}
 		} else {
-			if boolMap[rule.prefix] == nil {
-				boolMap[rule.prefix] = true
-			} else if boolMap[rule.prefix] == false {
-				err = fmt.Errorf("%s冲突，map和slice不能并存", rule.prefix)
-				return
-			}
-			samePrefixes, prefix := samesAdd(rule.samePrefixes, [][]interface{}{
-				{".", fieldList[0]},
-			})
+			// 对象
 			dataMap, _ := data.(map[string]interface{})
-			otherRules = append(otherRules, Rule{
-				prefix:       prefix,
-				data:         dataMap[fieldList[0]],
-				Field:        strings.Join(fieldList[1:], "."),
-				Methods:      rule.Methods,
-				Notes:        rule.Notes,
-				samePrefixes: samePrefixes,
-			})
+			if len(fieldList) > 1 {
+				otherRules = append(otherRules, Rule{
+					Field:   strings.Join(fieldList[1:], "."),
+					data:    dataMap[fieldList[0]],
+					prefix:  fieldJoin(rule.prefix, fieldList[0]),
+					Methods: rule.Methods,
+					Notes:   rule.Notes,
+				})
+			}
+			path = fieldJoin(rule.prefix, fieldList[0])
+			if _, ok := pathIndexMap[path]; ok {
+				continue
+			}
+			pathIndexMap[path] = pathIndex
+			pathIndex++
+			parentIndex := -1
+			if tmp, ok := pathIndexMap[rule.prefix]; ok {
+				parentIndex = tmp
+				rsLen := len(rs)
+				if rs[parentIndex].firstChildIndex == 0 {
+					rs[parentIndex].firstChildIndex = rsLen
+				}
+				rs[parentIndex].lastChildIndex = rsLen
+			}
+			treeItem := ruleTree{
+				path:        path,
+				prefix:      rule.prefix,
+				field:       fieldList[0],
+				data:        dataMap[fieldList[0]],
+				index:       pathIndex - 1,
+				parentIndex: parentIndex,
+			}
+			if len(fieldList) == 1 {
+				treeItem.methods = rule.Methods
+				treeItem.notes = rule.Notes
+			}
+			rs = append(rs, treeItem)
 		}
 	}
-	rsList = append(rsList, rs)
 	if len(otherRules) > 0 {
-		if childRs, er := disintegrateRules(otherRules, nil, false); er != nil {
-			err = er
-			return
+		disintegrateRules(otherRules, nil, false, &rs, pathIndexMap, pathIndex)
+	}
+	*rsPtr = rs
+}
+
+func ruleTreeSort(list []ruleTree, index int) (rs []*ruleTree) {
+	size := len(list)
+	stackList := make([]*ruleTree, size)
+	stackIndex := 0
+	rs = make([]*ruleTree, size)
+	rsIndex := 0
+	n := len(list)
+	for i := 0; i < n; i++ {
+		if list[i].parentIndex == index {
+			stackList[stackIndex] = &list[i]
+			stackIndex++
+			for stackIndex > 0 {
+				stackIndex--
+				curr := stackList[stackIndex]
+				rs[rsIndex] = curr
+				rsIndex++
+				if curr.lastChildIndex == 0 {
+					continue
+				}
+				for j := curr.lastChildIndex; j >= curr.firstChildIndex; j-- {
+					stackList[stackIndex] = &list[j]
+					stackIndex++
+				}
+			}
 		} else {
-			rsList = append(rsList, childRs...)
+			break
 		}
 	}
 	return
 }
 
-func ruleRowSort(list [][]ruleRow) (rs []ruleRow, pathIndex map[string]int) {
-	if len(list) > 0 && len(list[0]) == 0 {
-		list = list[1:]
-	}
-	for k, rowDataList := range list {
-		if k == 0 {
-			pathIndex = map[string]int{}
-			for index, row := range rowDataList {
-				pathIndex[row.path] = index
-				rowDataList[index].prefix = noPrefix
-			}
-			rs = rowDataList
-			continue
-		} else if k+1 > len(list) {
-			break
-		}
-		var newRs []ruleRow
-		pathIndex = map[string]int{}
-		for _, row := range rs {
-			newRs = append(newRs, row)
-			pathIndex[row.path] = len(newRs) - 1
-			for _, rowChild := range rowDataList {
-				if row.path == rowChild.prefix {
-					newRs = append(newRs, rowChild)
-					pathIndex[rowChild.path] = len(newRs) - 1
+type stack struct {
+	path string
+	tree ruleTree
+}
+
+func searchTree(path string, treeList []ruleTree) (rs []ruleTree) {
+	var stackList []stack
+	stackList = append(stackList, stack{
+		path: path,
+		tree: treeList[0],
+	})
+	for len(stackList) > 0 {
+		curr := stackList[len(stackList)-1]
+		stackList = stackList[:len(stackList)-1]
+		// 搜索
+		pathList := strings.Split(curr.path, ".")
+		for i := curr.tree.firstChildIndex; i <= curr.tree.lastChildIndex; i++ {
+			newTree := treeList[i]
+			if pathList[0] == "*" {
+				if len(pathList) == 1 {
+					rs = append(rs, newTree)
+				} else {
+					stackList = append(stackList, stack{
+						path: strings.Join(pathList[1:], "."),
+						tree: newTree,
+					})
 				}
+			} else if treeList[i].field == pathList[0] {
+				if len(pathList) == 1 {
+					rs = append(rs, newTree)
+				} else {
+					stackList = append(stackList, stack{
+						path: strings.Join(pathList[1:], "."),
+						tree: newTree,
+					})
+				}
+				break
 			}
 		}
-		rs = newRs
 	}
-	return
+	// 倒序
+	n := len(rs)
+	for i := 0; i < n/2; i++ {
+		rs[i], rs[n-1-i] = rs[n-1-i], rs[i]
+	}
+	return rs
 }
 
 func isSlice(prefix string) bool {
@@ -223,32 +275,28 @@ func isSlice(prefix string) bool {
 	return false
 }
 
-func samesAdd(sames []string, adds [][]interface{}) (rs []string, now string) {
-	index := 0
-	if len(sames) == 0 {
-		rs = make([]string, len(adds))
-		for k, add := range adds {
-			ks := stringJoin("", ".", add...)
-			if k == 0 {
-				now = ks
-			}
-			rs[index] = ks
-			index++
-		}
-		return
+func fieldJoin(vs ...interface{}) string {
+	if len(vs) == 0 {
+		return ""
 	}
-	rs = make([]string, len(sames)*len(adds))
-	for k, same := range sames {
-		for k1, add := range adds {
-			ks := stringJoin(same, ".", add...)
-			if k == 0 && k1 == 0 {
-				now = ks
-			}
-			rs[index] = ks
-			index++
+	var buf bytes.Buffer
+	for _, v := range vs {
+		s := ""
+		switch v.(type) {
+		case string:
+			s = v.(string)
+		case int:
+			s = strconv.Itoa(v.(int))
 		}
+		if s == "" {
+			continue
+		}
+		if buf.Len() > 0 {
+			_, _ = buf.WriteString(".")
+		}
+		_, _ = buf.WriteString(s)
 	}
-	return
+	return buf.String()
 }
 
 func stringJoin(s, deletePrefix string, vs ...interface{}) string {
@@ -736,9 +784,9 @@ func inArray(val interface{}, array interface{}) (exists bool) {
 	return
 }
 
-func inArrayString(v string, list []string) bool {
+func inArrayRuleTree(v string, list []ruleTree) bool {
 	for _, val := range list {
-		if val == v {
+		if val.path == v {
 			return true
 		}
 	}

@@ -206,28 +206,33 @@ func (m *methods) Unique(d *Data, args ...interface{}) error {
 	if err := validArgs(args, 0, 0); err != nil {
 		return err
 	}
-	validData := d.getValidData()
-	pkList := strings.Split(validData.samePaths[len(validData.samePaths)-1], ".")
-	lastStarIndex := 0
-	for i := len(pkList) - 1; i >= 0; i-- {
-		if pkList[i] == "*" {
-			lastStarIndex = i
-			break
+	pathList := strings.Split(d.path, ".")
+	n := len(pathList)
+	newList := make([]string, n)
+	isExists := false
+	for i := n - 1; i >= 0; i-- {
+		tmp := pathList[i]
+		if isExists {
+			newList[i] = tmp
+		} else if isSlice(tmp) {
+			isExists = true
+			newList[i] = "*"
+		} else {
+			newList[i] = tmp
 		}
 	}
-	fullList := strings.Split(d.path, ".")
-	newList := append(fullList[0:lastStarIndex], pkList[lastStarIndex:]...)
-	var list []interface{}
-	for _, v := range d.GetData(strings.Join(newList, ".")) {
+	newPath := strings.Join(newList, ".")
+	dataList := d.GetData(newPath)
+	validData := d.GetValidData()
+	for _, v := range dataList {
 		if v.Path == d.path {
-			break
+			continue
 		}
-		if inArray(v.Data, list) {
+		if validData == v.Data {
 			return validError(lang.Unique, d.getMessage(), langArg{
 				notes: d.GetNotes(),
 			})
 		}
-		list = append(list, v.Data)
 	}
 	return nil
 }

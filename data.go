@@ -7,13 +7,13 @@ import (
 
 // Data 数据
 type Data struct {
-	data           *interface{}      // 原数据指针
-	path           string            // 路径
-	methodName     string            // 方法名称
-	ruleRowListPtr *[]ruleRow        // 数据指针
-	pathIndexPtr   *map[string]int   // 验证数据索引
-	messagesPtr    *[]Message        // 消息指针
-	fileMapPtr     *map[string]*file // 文件指针
+	data            *interface{}      // 原数据指针
+	path            string            // 路径
+	index           int               // 索引
+	methodName      string            // 方法名称
+	ruleTreeListPtr *[]ruleTree       // 数据指针
+	messagesPtr     *[]Message        // 消息指针
+	fileMapPtr      *map[string]*file // 文件指针
 }
 
 // GetAllData 获取所有数据
@@ -23,13 +23,15 @@ func (d *Data) GetAllData() interface{} {
 
 // GetData 获取数据且合并成数组
 func (d *Data) GetData(path string) (rs []DataOne) {
-	for _, v := range *d.ruleRowListPtr {
-		if inArrayString(path, v.samePaths) {
-			rs = append(rs, DataOne{
-				Path: v.path,
-				Data: v.data,
-			})
+	treeList := searchTree(path, *d.ruleTreeListPtr)
+	rs = make([]DataOne, len(treeList))
+	index := 0
+	for _, v := range treeList {
+		rs[index] = DataOne{
+			Path: v.path,
+			Data: v.data,
 		}
+		index++
 	}
 	return
 }
@@ -38,26 +40,18 @@ func (d *Data) GetData(path string) (rs []DataOne) {
 func (d *Data) GetCommonData(path string) interface{} {
 	commonPath, otherPath := getCommonFullField(d.path, path)
 	newPath := strings.TrimPrefix(commonPath+"."+otherPath, ".")
-	pathIndex := *d.pathIndexPtr
-	if index, ok := pathIndex[newPath]; ok {
-		ruleRowList := *d.ruleRowListPtr
-		return ruleRowList[index].data
+	treeList := searchTree(newPath, *d.ruleTreeListPtr)
+	if len(treeList) > 0 {
+		return treeList[0].data
 	}
 	return nil
 }
 
 // GetLevelData 获取层级数据，遇到*合并数组
 func (d *Data) GetLevelData(path string) (rs []DataOne) {
-	commonPath, _ := getCommonFullField(d.path, path)
-	for _, v := range *d.ruleRowListPtr {
-		if strings.Index(v.path, commonPath) != -1 && inArrayString(path, v.samePaths) {
-			rs = append(rs, DataOne{
-				Path: v.path,
-				Data: v.data,
-			})
-		}
-	}
-	return
+	commonPath, otherPath := getCommonFullField(d.path, path)
+	newPath := strings.TrimPrefix(commonPath+"."+otherPath, ".")
+	return d.GetData(newPath)
 }
 
 // GetValidData 获取验证数据
@@ -76,12 +70,9 @@ func (d *Data) GetNotes() string {
 
 // GetNotesByPath 根据path获取注释
 func (d *Data) GetNotesByPath(path string) string {
-	if index, ok := (*d.pathIndexPtr)[path]; ok {
-		notes := (*d.ruleRowListPtr)[index].notes
-		if notes == "" {
-			notes = (*d.ruleRowListPtr)[index].path
-		}
-		return notes
+	rs := searchTree(path, *d.ruleTreeListPtr)
+	if len(rs) > 0 {
+		return rs[0].notes
 	}
 	return ""
 }
@@ -104,24 +95,25 @@ func (d *Data) getFile() (f *file, err error) {
 }
 
 func (d *Data) getMessage() string {
-	for i := len(*d.messagesPtr) - 1; i >= 0; i-- {
+	n := len(*d.messagesPtr)
+	for i := n - 1; i >= 0; i-- {
 		message := (*d.messagesPtr)[i]
 		base := strings.TrimSuffix(message[0], stringJoin(".", "", d.methodName))
 		if len(base) == len(message[0]) {
 			continue
 		}
-		if inArrayString(base, d.getValidData().samePaths) {
+		if inArrayRuleTree(d.path, searchTree(base, *d.ruleTreeListPtr)) {
 			return message[1]
 		}
 	}
 	return ""
 }
 
-func (d *Data) getValidData() ruleRow {
-	return (*d.ruleRowListPtr)[(*d.pathIndexPtr)[d.path]]
+func (d *Data) getValidData() ruleTree {
+	return (*d.ruleTreeListPtr)[d.index]
 }
 
 func (d *Data) setValidData(value interface{}) {
-	(*d.ruleRowListPtr)[(*d.pathIndexPtr)[d.path]].data = value
+	(*d.ruleTreeListPtr)[d.index].data = value
 	*d.data = upData(*d.data, d.path, value)
 }

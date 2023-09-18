@@ -142,21 +142,21 @@ func (v *Valid) parseRequest() error {
 
 // parseRule 解析规则
 func (v *Valid) parseRule(rules []Rule, data interface{}) error {
-	ruleRowList, err := disintegrateRules(rules, data, true)
-	if err != nil {
-		return err
-	}
-	v.handle.ruleRowList, v.handle.pathIndex = ruleRowSort(ruleRowList)
+	disintegrateRules(rules, data, true, &v.handle.ruleTreeList)
+	v.handle.validRulePtrList = ruleTreeSort(v.handle.ruleTreeList, -1)
 	return nil
 }
 
 // validRule 验证规则
 func (v *Valid) validRule(data *interface{}) (err error) {
-	for _, ruleOnce := range v.handle.ruleRowList {
-		if index, ok := v.handle.pathIndex[ruleOnce.prefix]; ok {
-			parent := v.handle.ruleRowList[index]
+	for _, ruleOnce := range v.handle.validRulePtrList {
+		if ruleOnce.methods == nil {
+			continue
+		}
+		if ruleOnce.parentIndex != -1 {
+			parent := v.handle.ruleTreeList[ruleOnce.parentIndex]
 			if parent.jumpChild {
-				v.handle.ruleRowList[v.handle.pathIndex[ruleOnce.path]].jumpChild = true
+				v.handle.ruleTreeList[ruleOnce.index].jumpChild = true
 				return
 			}
 		}
@@ -167,12 +167,12 @@ func (v *Valid) validRule(data *interface{}) (err error) {
 				ruleOnce.notes = ruleOnce.path
 			}
 			d := &Data{
-				data:           data,
-				path:           ruleOnce.path,
-				ruleRowListPtr: &v.handle.ruleRowList,
-				pathIndexPtr:   &v.handle.pathIndex,
-				fileMapPtr:     &v.handle.fileMap,
-				messagesPtr:    &v.storage.messages,
+				data:            data,
+				path:            ruleOnce.path,
+				index:           ruleOnce.index,
+				ruleTreeListPtr: &v.handle.ruleTreeList,
+				fileMapPtr:      &v.handle.fileMap,
+				messagesPtr:     &v.storage.messages,
 			}
 			var fn methodFunc
 			var me string
@@ -213,7 +213,7 @@ func (v *Valid) validRule(data *interface{}) (err error) {
 			return
 		}
 		if isJumpChild {
-			v.handle.ruleRowList[v.handle.pathIndex[ruleOnce.path]].jumpChild = true
+			v.handle.ruleTreeList[ruleOnce.index].jumpChild = true
 		}
 	}
 	return

@@ -36,8 +36,6 @@ func init() {
 func New() *Valid {
 	v := new(Valid)
 	v.handle.fileMap = map[string]*file{}
-	v.handle.ruleRowList = []ruleRow{}
-	v.handle.pathIndex = map[string]int{}
 	return v
 }
 
