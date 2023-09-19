@@ -1,6 +1,8 @@
 package validator
 
-import "net/http"
+import (
+	"net/http"
+)
 
 const (
 	jumpValid string = "<**>.###(BREAK)###.<**>" // 跳过该字段所有验证
@@ -24,9 +26,17 @@ type methodData struct {
 }
 
 func (m *method) List(me ...*method) []methodData {
-	var rs []methodData
+	size := 0
 	for _, mm := range me {
-		rs = append(rs, mm.methods...)
+		size += len(mm.methods)
+	}
+	rs := make([]methodData, size)
+	index := 0
+	for _, mm := range me {
+		for _, v := range mm.methods {
+			rs[index] = v
+			index++
+		}
 	}
 	return rs
 }
@@ -115,7 +125,7 @@ type Rule struct {
 // Message 消息
 type Message [2]string
 
-// 单条数据
+// DataOne 单条数据
 type DataOne struct {
 	Path string
 	Data interface{}

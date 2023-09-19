@@ -63,7 +63,7 @@ func disintegrateRules(rules []Rule, data interface{}, init bool, rsPtr *[]ruleT
 			rs[0].notes = rule.Notes
 		}
 		fieldList := strings.Split(rule.Field, ".")
-		if isSlice(fieldList[0]) {
+		if fieldList[0] == "*" {
 			// 数组
 			if sameBeforePrefix == rule.prefix {
 				continue
@@ -89,7 +89,7 @@ func disintegrateRules(rules []Rule, data interface{}, init bool, rsPtr *[]ruleT
 					if len(newFieldList) == 1 {
 						continue
 					}
-					if isSlice(newFieldList[1]) {
+					if newFieldList[1] == "*" {
 						otherRules = append(otherRules, Rule{
 							Field:   strings.Join(newFieldList[1:], "."),
 							data:    v,
