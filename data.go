@@ -36,7 +36,7 @@ func (d *Data) GetData(path string) (rs []DataOne) {
 	return
 }
 
-// GetCommonData 获取数组层级最近的一次相同数据(同一数组中) todo
+// GetCommonData 获取数组层级最近的一次相同数据(同一数组中)
 func (d *Data) GetCommonData(path string) interface{} {
 	commonPath, otherPath := getCommonFullField(d.path, path)
 	newPath := strings.TrimPrefix(commonPath+"."+otherPath, ".")
