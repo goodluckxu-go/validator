@@ -142,7 +142,9 @@ func (v *Valid) parseRequest() error {
 
 // parseRule 解析规则
 func (v *Valid) parseRule(rules []Rule, data interface{}) error {
-	disintegrateRules(rules, data, true, &v.handle.ruleTreeList)
+	if err := disintegrateRules(rules, data, true, &v.handle.ruleTreeList); err != nil {
+		return err
+	}
 	v.handle.validRulePtrList = ruleTreeSort(v.handle.ruleTreeList, -1)
 	return nil
 }

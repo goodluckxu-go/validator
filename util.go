@@ -30,7 +30,7 @@ func readBody(r *http.Request) []byte {
 }
 
 // 将规则和数据处理成单条
-func disintegrateRules(rules []Rule, data interface{}, init bool, rsPtr *[]ruleTree, args ...interface{}) {
+func disintegrateRules(rules []Rule, data interface{}, init bool, rsPtr *[]ruleTree, args ...interface{}) (err error) {
 	rs := *rsPtr
 	pathIndexMap := map[string]int{}
 	pathIndex := 0
@@ -39,6 +39,7 @@ func disintegrateRules(rules []Rule, data interface{}, init bool, rsPtr *[]ruleT
 		pathIndex, _ = args[1].(int)
 	}
 	var otherRules []Rule
+	boolMap := map[string]interface{}{} // 是否时map类型
 	n := len(rules)
 	sameBeforePrefix := ""
 	for index := 0; index < n; index++ {
@@ -64,6 +65,12 @@ func disintegrateRules(rules []Rule, data interface{}, init bool, rsPtr *[]ruleT
 		}
 		fieldList := strings.Split(rule.Field, ".")
 		if fieldList[0] == "*" {
+			if boolMap[rule.prefix] == nil {
+				boolMap[rule.prefix] = false
+			} else if boolMap[rule.prefix] == true {
+				err = fmt.Errorf("%s冲突，map和slice不能并存", rule.prefix)
+				return
+			}
 			// 数组
 			if sameBeforePrefix == rule.prefix {
 				continue
@@ -139,6 +146,12 @@ func disintegrateRules(rules []Rule, data interface{}, init bool, rsPtr *[]ruleT
 			index += jump - 1
 			continue
 		} else {
+			if boolMap[rule.prefix] == nil {
+				boolMap[rule.prefix] = true
+			} else if boolMap[rule.prefix] == false {
+				err = fmt.Errorf("%s冲突，map和slice不能并存", rule.prefix)
+				return
+			}
 			// 对象
 			dataMap, _ := data.(map[string]interface{})
 			if len(fieldList) > 1 {
@@ -181,9 +194,12 @@ func disintegrateRules(rules []Rule, data interface{}, init bool, rsPtr *[]ruleT
 		}
 	}
 	if len(otherRules) > 0 {
-		disintegrateRules(otherRules, nil, false, &rs, pathIndexMap, pathIndex)
+		if err = disintegrateRules(otherRules, nil, false, &rs, pathIndexMap, pathIndex); err != nil {
+			return
+		}
 	}
 	*rsPtr = rs
+	return
 }
 
 func ruleTreeSort(list []ruleTree, index int) (rs []*ruleTree) {
